@@ -8,6 +8,7 @@ jar.enabled = true
 
 dependencies {
     implementation(project(":application"))
+    implementation(project(":domain"))
     runtimeOnly(project(":storage"))
 
     //Web
