@@ -8,49 +8,56 @@ plugins {
     kotlin("plugin.jpa") version "1.9.22"
 }
 
-group = "com.trading"
-version = "0.0.1-SNAPSHOT"
+allprojects {
+    group = "com.trading.tcg"
+    version = "0.0.1-SNAPSHOT"
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-}
+    repositories {
+        mavenCentral()
+    }
 
-configurations {
-    compileOnly {
-        extendsFrom(configurations.annotationProcessor.get())
+    apply(plugin = "java")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "org.jetbrains.kotlin.plugin.spring")
+    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs += "-Xjsr305=strict"
+            jvmTarget = "17"
+        }
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    //Lombok
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-
-    //Web
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-    //JPA
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc")
-    runtimeOnly("org.postgresql:postgresql")
-
-    //Spring Boot Test
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs += "-Xjsr305=strict"
-        jvmTarget = "17"
+subprojects {
+    configurations {
+        compileOnly {
+            extendsFrom(configurations.annotationProcessor.get())
+        }
     }
-}
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+    dependencies {
+        //Lombok
+        compileOnly("org.projectlombok:lombok")
+        annotationProcessor("org.projectlombok:lombok")
+
+        //Jackson
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+        //Kotlin-Reflection
+        implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+        //Spring Boot Test
+        testImplementation("org.springframework.boot:spring-boot-starter-test")
+    }
 }
