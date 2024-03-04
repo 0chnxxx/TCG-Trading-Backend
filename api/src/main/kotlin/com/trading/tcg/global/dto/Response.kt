@@ -1,4 +1,4 @@
-package com.trading.tcg.global
+package com.trading.tcg.global.dto
 
 import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
