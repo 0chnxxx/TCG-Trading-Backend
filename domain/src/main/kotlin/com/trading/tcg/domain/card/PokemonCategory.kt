@@ -1,4 +1,4 @@
-package com.trading.tcg.domain
+package com.trading.tcg.domain.card
 
 enum class PokemonCategory(val category: String) {
     CATEGORY001("기본"),

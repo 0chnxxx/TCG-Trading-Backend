@@ -14,10 +14,11 @@ class SwaggerConfig {
         return OpenAPI()
             .servers(listOf(Server().url("http://localhost:8080").description("로컬 서버")))
             .components(Components())
-            .info(Info()
-                .title("TCG-Trading API")
-                .description("TCG-Trading System의 API 명세서입니다.")
-                .version("v0.0.1")
+            .info(
+                Info()
+                    .title("TCG-Trading API")
+                    .description("TCG-Trading System의 API 명세서입니다.")
+                    .version("v0.0.1")
             )
     }
 }

@@ -1,8 +1,8 @@
-package com.trading.tcg.adapter.out.persistence.entity
+package com.trading.tcg.adapter.out.persistence.card.entity
 
-import com.trading.tcg.domain.PokemonCard
+import com.trading.tcg.adapter.out.persistence.global.BaseEntity
+import com.trading.tcg.domain.card.PokemonCard
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "pokemon_card")
@@ -58,7 +58,7 @@ class PokemonCardEntity(
     @Column(name = "pokemon_type")
     private val pokemonType: String? = null,
 
-    @OneToMany(mappedBy = "pokemonCardEntity", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
     private val pokemonSkills: List<PokemonCardSkillEntity>,
 
     @Column(name = "pokemon_weakness_type")
@@ -74,13 +74,7 @@ class PokemonCardEntity(
     private val pokemonResistanceValue: String? = null,
 
     @Column(name = "pokemon_retreat_value")
-    private val pokemonRetreatValue: Int? = null,
-
-    @Column(name = "created_time", nullable = false)
-    private val createdTime: LocalDateTime,
-
-    @Column(name = "updated_time")
-    private val updatedTime: LocalDateTime? = null) {
+    private val pokemonRetreatValue: Int? = null) : BaseEntity() {
 
     fun toDomain(): PokemonCard {
         return PokemonCard(

@@ -1,8 +1,7 @@
-package com.trading.tcg.adapter.out.persistence.entity
+package com.trading.tcg.adapter.out.persistence.card.entity
 
-import com.trading.tcg.domain.PokemonCardPack
+import com.trading.tcg.domain.card.PokemonCardPack
 import jakarta.persistence.*
-import lombok.Getter
 
 @Entity
 @Table(name = "pokemon_card_pack")

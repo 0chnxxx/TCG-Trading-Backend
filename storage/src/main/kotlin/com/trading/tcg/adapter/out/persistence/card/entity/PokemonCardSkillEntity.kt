@@ -1,6 +1,6 @@
-package com.trading.tcg.adapter.out.persistence.entity
+package com.trading.tcg.adapter.out.persistence.card.entity
 
-import com.trading.tcg.domain.PokemonCardSkill
+import com.trading.tcg.domain.card.PokemonCardSkill
 import jakarta.persistence.*
 
 @Entity

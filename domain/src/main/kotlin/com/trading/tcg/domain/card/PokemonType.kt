@@ -1,4 +1,4 @@
-package com.trading.tcg.domain
+package com.trading.tcg.domain.card
 
 enum class PokemonType(var type: String) {
     WATER("물"),

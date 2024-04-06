@@ -1,6 +1,6 @@
-package com.trading.tcg.domain
+package com.trading.tcg.domain.card
 
-enum class CardSerialCode(val code: String) {
+enum class PokemonCardSerialCode(val code: String) {
     TYPE001("RBD"),
     TYPE002("FSG"),
     TYPE003("SML"),
