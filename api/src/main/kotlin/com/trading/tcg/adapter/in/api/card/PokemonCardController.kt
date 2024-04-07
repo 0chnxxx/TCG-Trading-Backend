@@ -32,7 +32,7 @@ class PokemonCardController(
 
     @Operation(summary = "포켓몬 카드 단건 조회", description = "포켓몬 카드 단건을 조회한다.")
     @GetMapping("/cards/{cardId}")
-    fun findCards(
+    fun findCard(
         @PathVariable(name = "cardId") cardId: Long
     ): Response<PokemonCardDetailDto> {
         return Response.of(HttpStatus.OK, findPokemonCardUseCase.findPokemonCard(cardId))
