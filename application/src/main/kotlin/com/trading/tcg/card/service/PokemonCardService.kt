@@ -5,6 +5,7 @@ import com.trading.tcg.card.dto.response.PokemonCardDetailDto
 import com.trading.tcg.card.dto.response.PokemonCardDto
 import com.trading.tcg.card.port.`in`.FindPokemonCardUseCase
 import com.trading.tcg.card.port.out.PokemonCardPersistencePort
+import com.trading.tcg.global.dto.Response
 import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
 
@@ -13,13 +14,26 @@ import org.springframework.stereotype.Service
 class PokemonCardService(
     private val pokemonCardPersistencePort : PokemonCardPersistencePort
 ) : FindPokemonCardUseCase {
-    override fun findPokemonCards(query: FindPokemonCardQuery): List<PokemonCardDto> {
+    override fun findPokemonCards(query: FindPokemonCardQuery): Response<List<PokemonCardDto>> {
         val pokemonCards = pokemonCardPersistencePort.findPokemonCards(query)
-        return pokemonCards.stream().map { PokemonCardDto.ofDomain(it) }.toList()
+
+        return Response.of(
+            pageResult = Response.PageResult.of(
+                pokemonCards.size,
+                query.page,
+                query.size
+            ),
+            data = pokemonCards.stream()
+                .map { PokemonCardDto.ofDomain(it) }
+                .toList()
+        )
     }
 
-    override fun findPokemonCard(cardId: Long): PokemonCardDetailDto {
+    override fun findPokemonCard(cardId: Long): Response<PokemonCardDetailDto> {
         val pokemonCard = pokemonCardPersistencePort.findPokemonCard(cardId)
-        return PokemonCardDetailDto.ofDomain(pokemonCard)
+
+        return Response.of(
+            data = PokemonCardDetailDto.ofDomain(pokemonCard)
+        )
     }
 }
