@@ -1,7 +1,8 @@
 package com.trading.tcg.user.domain
 
+import com.trading.tcg.global.exception.CustomException
+import com.trading.tcg.global.exception.ServiceErrorCode
 import com.trading.tcg.user.port.out.UserPersistencePort
-import java.lang.Exception
 import java.time.LocalDateTime
 
 class User(
@@ -17,7 +18,7 @@ class User(
 ) {
     fun checkDuplicateEmail(userPersistencePort: UserPersistencePort) {
         if (userPersistencePort.findByEmail(this.email) != null) {
-            throw Exception("duplicated email")
+            throw CustomException(ServiceErrorCode.DUPLICATED_EMAIL)
         }
     }
 }

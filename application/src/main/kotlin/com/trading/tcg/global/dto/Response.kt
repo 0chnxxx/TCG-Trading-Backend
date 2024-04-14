@@ -11,7 +11,7 @@ data class Response<T>(
     val pageResult: PageResult? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    var data: T? = null
+    val data: T? = null
 ) {
     companion object {
         @JvmStatic
@@ -35,7 +35,7 @@ data class Response<T>(
         companion object {
             @JvmStatic
             fun of(count: Int, page: Int, size: Int): PageResult {
-                return Response.PageResult(
+                return PageResult(
                     page = page,
                     size = size,
                     totalPages = ceil(count.toDouble() / size).toInt(),
