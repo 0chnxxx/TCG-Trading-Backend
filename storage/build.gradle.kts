@@ -8,7 +8,6 @@ jar.enabled = true
 
 dependencies {
     implementation(project(":application"))
-    implementation(project(":domain"))
 
     //JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

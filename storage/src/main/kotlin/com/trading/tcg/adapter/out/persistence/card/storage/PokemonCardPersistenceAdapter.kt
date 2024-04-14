@@ -1,7 +1,7 @@
 package com.trading.tcg.adapter.out.persistence.card.storage
 
 import com.trading.tcg.card.dto.request.FindPokemonCardQuery
-import com.trading.tcg.domain.card.Card
+import com.trading.tcg.card.domain.Card
 import com.trading.tcg.card.port.out.PokemonCardPersistencePort
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository

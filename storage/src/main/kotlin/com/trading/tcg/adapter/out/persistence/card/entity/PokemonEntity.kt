@@ -1,10 +1,8 @@
 package com.trading.tcg.adapter.out.persistence.card.entity
 
 import com.trading.tcg.adapter.out.persistence.global.BaseEntity
-import com.trading.tcg.domain.card.Card
-import com.trading.tcg.domain.card.PokemonType
+import com.trading.tcg.card.domain.PokemonType
 import jakarta.persistence.*
-import lombok.Getter
 
 @Entity
 @Table(name = "pokemon")

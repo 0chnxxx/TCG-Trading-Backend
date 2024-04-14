@@ -1,6 +1,5 @@
 package com.trading.tcg.adapter.out.persistence.card.entity
 
-import com.trading.tcg.domain.card.CardAbility
 import jakarta.persistence.*
 
 @Entity

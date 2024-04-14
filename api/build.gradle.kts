@@ -8,11 +8,13 @@ jar.enabled = true
 
 dependencies {
     implementation(project(":application"))
-    implementation(project(":domain"))
     runtimeOnly(project(":storage"))
 
-    //Web
+    //Spring Web
     implementation("org.springframework.boot:spring-boot-starter-web")
+
+    //Spring Validation
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 
     //Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")

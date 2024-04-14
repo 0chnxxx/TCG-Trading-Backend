@@ -1,6 +1,6 @@
 package com.trading.tcg.card.dto.response
 
-import com.trading.tcg.domain.card.Card
+import com.trading.tcg.card.domain.Card
 import java.time.LocalDateTime
 
 data class PokemonCardDetailDto(
@@ -43,6 +43,7 @@ data class PokemonCardDetailDto(
     )
 
     companion object {
+        @JvmStatic
         fun ofDomain(card: Card): PokemonCardDetailDto {
             return PokemonCardDetailDto(
                 id = card.id,

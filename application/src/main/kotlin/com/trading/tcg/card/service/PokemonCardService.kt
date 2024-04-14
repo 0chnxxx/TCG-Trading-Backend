@@ -8,12 +8,15 @@ import com.trading.tcg.card.port.out.PokemonCardPersistencePort
 import com.trading.tcg.global.dto.Response
 import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 class PokemonCardService(
     private val pokemonCardPersistencePort : PokemonCardPersistencePort
 ) : FindPokemonCardUseCase {
+    @Transactional(readOnly = true)
     override fun findPokemonCards(query: FindPokemonCardQuery): Response<List<PokemonCardDto>> {
         val pokemonCards = pokemonCardPersistencePort.findPokemonCards(query)
 
@@ -29,6 +32,7 @@ class PokemonCardService(
         )
     }
 
+    @Transactional(readOnly = true)
     override fun findPokemonCard(cardId: Long): Response<PokemonCardDetailDto> {
         val pokemonCard = pokemonCardPersistencePort.findPokemonCard(cardId)
 

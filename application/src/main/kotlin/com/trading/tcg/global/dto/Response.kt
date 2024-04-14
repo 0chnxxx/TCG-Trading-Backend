@@ -14,6 +14,7 @@ data class Response<T>(
     var data: T? = null
 ) {
     companion object {
+        @JvmStatic
         fun <T> of(pageResult: PageResult? = null, data: T): Response<T> {
             return Response(
                 LocalDateTime.now(),
@@ -32,6 +33,7 @@ data class Response<T>(
         val isLast: Boolean
     ) {
         companion object {
+            @JvmStatic
             fun of(count: Int, page: Int, size: Int): PageResult {
                 return Response.PageResult(
                     page = page,
