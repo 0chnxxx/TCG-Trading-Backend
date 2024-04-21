@@ -5,6 +5,7 @@ import com.trading.tcg.card.dto.response.PokemonCardDetailDto
 import com.trading.tcg.card.dto.response.PokemonCardDto
 import com.trading.tcg.card.port.`in`.FindPokemonCardUseCase
 import com.trading.tcg.card.port.out.PokemonCardPersistencePort
+import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.dto.Response
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.exception.ServiceErrorCode
@@ -16,10 +17,10 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 @RequiredArgsConstructor
 class PokemonCardService(
-    private val pokemonCardPersistencePort : PokemonCardPersistencePort
+    private val pokemonCardPersistencePort: PokemonCardPersistencePort
 ) : FindPokemonCardUseCase {
     @Transactional(readOnly = true)
-    override fun findPokemonCards(query: FindPokemonCardQuery): Response<List<PokemonCardDto>> {
+    override fun findPokemonCards(provider: Provider, query: FindPokemonCardQuery): Response<List<PokemonCardDto>> {
         val pokemonCards = pokemonCardPersistencePort.findPokemonCards(query)
 
         return Response.of(
@@ -35,8 +36,9 @@ class PokemonCardService(
     }
 
     @Transactional(readOnly = true)
-    override fun findPokemonCard(cardId: Long): Response<PokemonCardDetailDto> {
-        val pokemonCard = pokemonCardPersistencePort.findPokemonCard(cardId).orElseThrow { CustomException(ServiceErrorCode.NOT_FOUND_CARD) }
+    override fun findPokemonCard(provider: Provider, cardId: Long): Response<PokemonCardDetailDto> {
+        val pokemonCard = pokemonCardPersistencePort.findPokemonCard(cardId)
+            .orElseThrow { CustomException(ServiceErrorCode.NOT_FOUND_CARD) }
 
         return Response.of(
             data = PokemonCardDetailDto.ofDomain(pokemonCard)

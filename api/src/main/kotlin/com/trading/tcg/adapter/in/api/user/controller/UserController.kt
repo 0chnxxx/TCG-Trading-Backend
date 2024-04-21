@@ -25,7 +25,8 @@ class UserController(
     @Operation(summary = "유저 회원가입", description = "유저를 가입시킨다.")
     @PostMapping("/users/register")
     fun registerUser(
-        @RequestBody @Validated(ValidationSequence::class) request: RegisterUserRequest
+        @RequestBody @Validated(ValidationSequence::class)
+        request: RegisterUserRequest
     ): ResponseEntity<Response<JwtToken>> {
         return ResponseEntity(registerUserUseCase.register(request.toCommand()), HttpStatus.CREATED)
     }
@@ -33,7 +34,8 @@ class UserController(
     @Operation(summary = "유저 로그인", description = "유저를 로그인시킨다.")
     @PostMapping("/users/login")
     fun loginUser(
-        @RequestBody @Validated(ValidationSequence::class) request: LoginUserRequest
+        @RequestBody @Validated(ValidationSequence::class)
+        request: LoginUserRequest
     ): ResponseEntity<Response<JwtToken>> {
         return ResponseEntity(loginUserUseCase.login(request.toCommand()), HttpStatus.OK)
     }

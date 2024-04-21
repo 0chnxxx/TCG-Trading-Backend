@@ -2,11 +2,11 @@ package com.trading.tcg.user.service
 
 import com.trading.tcg.global.dto.Response
 import com.trading.tcg.global.exception.CustomException
+import com.trading.tcg.global.exception.ServiceErrorCode
 import com.trading.tcg.global.jwt.dto.request.CreateTokenCommand
 import com.trading.tcg.global.jwt.dto.response.JwtToken
 import com.trading.tcg.global.jwt.service.JwtTokenProvider
 import com.trading.tcg.user.domain.User
-import com.trading.tcg.global.exception.ServiceErrorCode
 import com.trading.tcg.user.domain.UserProvider
 import com.trading.tcg.user.domain.UserRole
 import com.trading.tcg.user.dto.request.LoginUserCommand
@@ -46,11 +46,11 @@ class UserService(
         val user = userPersistencePort.findByEmail(command.email)
 
         if (user == null) {
-            throw CustomException(ServiceErrorCode.NOT_MATCH_Service)
+            throw CustomException(ServiceErrorCode.NOT_MATCH_USER)
         }
 
-        if (!user.password.equals(command.password)) {
-            throw CustomException(ServiceErrorCode.NOT_MATCH_Service)
+        if (user.password != command.password) {
+            throw CustomException(ServiceErrorCode.NOT_MATCH_USER)
         }
 
         val token = jwtTokenProvider.createToken(CreateTokenCommand(user, UserProvider.USER))

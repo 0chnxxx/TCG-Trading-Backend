@@ -13,6 +13,11 @@ dependencies {
     //Spring Web
     implementation("org.springframework.boot:spring-boot-starter-web")
 
+    //Spring Security
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.security:spring-security-data")
+    implementation("org.springframework.security:spring-security-test")
+
     //Spring Validation
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
