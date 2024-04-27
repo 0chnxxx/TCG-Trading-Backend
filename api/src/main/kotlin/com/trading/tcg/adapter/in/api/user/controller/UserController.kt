@@ -2,11 +2,11 @@ package com.trading.tcg.adapter.`in`.api.user.controller
 
 import com.trading.tcg.adapter.`in`.api.user.dto.LoginUserRequest
 import com.trading.tcg.adapter.`in`.api.user.dto.RegisterUserRequest
-import com.trading.tcg.global.jwt.dto.response.JwtToken
+import com.trading.tcg.application.user.port.`in`.LoginUserUseCase
+import com.trading.tcg.application.user.port.`in`.RegisterUserUseCase
 import com.trading.tcg.global.dto.Response
+import com.trading.tcg.global.jwt.dto.response.JwtToken
 import com.trading.tcg.global.validation.ValidationSequence
-import com.trading.tcg.user.port.`in`.LoginUserUseCase
-import com.trading.tcg.user.port.`in`.RegisterUserUseCase
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus

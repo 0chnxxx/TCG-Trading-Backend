@@ -1,6 +1,6 @@
 package com.trading.tcg.global.dto
 
-import com.trading.tcg.user.domain.User
+import com.trading.tcg.application.user.domain.User
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails

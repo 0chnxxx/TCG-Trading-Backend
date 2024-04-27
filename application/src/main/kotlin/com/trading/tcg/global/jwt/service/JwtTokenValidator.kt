@@ -1,9 +1,9 @@
 package com.trading.tcg.global.jwt.service
 
+import com.trading.tcg.application.user.domain.UserProvider
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.exception.ServiceErrorCode
 import com.trading.tcg.global.jwt.dto.response.DecodedToken
-import com.trading.tcg.user.domain.UserProvider
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.MalformedJwtException

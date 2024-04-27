@@ -1,9 +1,8 @@
 package com.trading.tcg.adapter.out.persistence.user.entity
 
 import com.trading.tcg.adapter.out.persistence.global.BaseEntity
-import com.trading.tcg.card.domain.*
-import com.trading.tcg.user.domain.User
-import com.trading.tcg.user.domain.UserRole
+import com.trading.tcg.application.user.domain.User
+import com.trading.tcg.application.user.domain.UserRole
 import jakarta.persistence.*
 
 @Entity

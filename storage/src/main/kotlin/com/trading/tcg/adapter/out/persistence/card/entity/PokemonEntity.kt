@@ -1,7 +1,6 @@
 package com.trading.tcg.adapter.out.persistence.card.entity
 
 import com.trading.tcg.adapter.out.persistence.global.BaseEntity
-import com.trading.tcg.card.domain.PokemonType
 import jakarta.persistence.*
 
 @Entity
@@ -29,22 +28,22 @@ class PokemonEntity(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    val type: PokemonType? = null,
+    val type: com.trading.tcg.application.card.domain.PokemonType? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "weakness_type")
-    val weaknessType: PokemonType? = null,
+    val weaknessType: com.trading.tcg.application.card.domain.PokemonType? = null,
 
     @Column(name = "weakness_value")
     val weaknessValue: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "resistance_type")
-    val resistanceType: PokemonType? = null,
+    val resistanceType: com.trading.tcg.application.card.domain.PokemonType? = null,
 
     @Column(name = "resistance_value")
     val resistanceValue: String? = null,
 
     @Column(name = "retreat_value")
-    val retreatValue: Int? = null) : BaseEntity() {
-}
+    val retreatValue: Int? = null
+) : BaseEntity()

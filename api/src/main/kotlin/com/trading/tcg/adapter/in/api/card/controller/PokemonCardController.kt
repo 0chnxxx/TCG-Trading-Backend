@@ -1,9 +1,7 @@
 package com.trading.tcg.adapter.`in`.api.card.controller
 
-import com.trading.tcg.card.dto.request.FindPokemonCardQuery
-import com.trading.tcg.card.dto.response.PokemonCardDetailDto
-import com.trading.tcg.card.dto.response.PokemonCardDto
-import com.trading.tcg.card.port.`in`.FindPokemonCardUseCase
+import com.trading.tcg.application.card.dto.response.PokemonCardDto
+import com.trading.tcg.application.card.port.`in`.FindPokemonCardUseCase
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.dto.Response
 import io.swagger.v3.oas.annotations.Operation
@@ -40,7 +38,7 @@ class PokemonCardController(
         @Min(value = 1, message = "페이지 크기가 범위를 벗어났습니다.")
         size: Int
     ): ResponseEntity<Response<List<PokemonCardDto>>> {
-        val query = FindPokemonCardQuery(
+        val query = com.trading.tcg.application.card.dto.request.FindPokemonCardQuery(
             page,
             size
         )
@@ -57,7 +55,7 @@ class PokemonCardController(
         @Parameter(name = "cardId", description = "카드 번호", example = "1", required = true)
         @PathVariable(name = "cardId")
         cardId: Long
-    ): ResponseEntity<Response<PokemonCardDetailDto>> {
+    ): ResponseEntity<Response<com.trading.tcg.application.card.dto.response.PokemonCardDetailDto>> {
         return ResponseEntity(findPokemonCardUseCase.findPokemonCard(provider, cardId), HttpStatus.OK)
     }
 }

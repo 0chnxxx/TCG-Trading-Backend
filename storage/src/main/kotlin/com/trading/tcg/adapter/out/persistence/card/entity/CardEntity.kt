@@ -1,7 +1,6 @@
 package com.trading.tcg.adapter.out.persistence.card.entity
 
 import com.trading.tcg.adapter.out.persistence.global.BaseEntity
-import com.trading.tcg.card.domain.*
 import jakarta.persistence.*
 
 @Entity
@@ -14,7 +13,7 @@ class CardEntity(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
-    val type: CardType,
+    val type: com.trading.tcg.application.card.domain.CardType,
 
     @Column(name = "code", nullable = false)
     val code: String,
@@ -27,15 +26,15 @@ class CardEntity(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "serial_code", nullable = false)
-    val serialCode: SerialCode,
+    val serialCode: com.trading.tcg.application.card.domain.SerialCode,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "regulation_mark")
-    val regulationMark: RegulationMark? = null,
+    val regulationMark: com.trading.tcg.application.card.domain.RegulationMark? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "rank")
-    val rank: Rank? = null,
+    val rank: com.trading.tcg.application.card.domain.Rank? = null,
 
     @Column(name = "sequence_number", nullable = false)
     val sequenceNumber: String,
@@ -50,10 +49,11 @@ class CardEntity(
     val pokemon: PokemonEntity,
 
     @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
-    val abilities: List<CardAbilityEntity>) : BaseEntity() {
+    val abilities: List<CardAbilityEntity>
+) : BaseEntity() {
 
-    fun toDomain(): Card {
-        return Card(
+    fun toDomain(): com.trading.tcg.application.card.domain.Card {
+        return com.trading.tcg.application.card.domain.Card(
             id = id,
             type = type,
             code = code,
@@ -62,10 +62,16 @@ class CardEntity(
             serialCode = serialCode,
             regulationMark = regulationMark,
             rank = rank,
-            packs = packs.map { Pack(it.pack.id, it.pack.name) },
+            packs = packs.map { com.trading.tcg.application.card.domain.Pack(it.pack.id, it.pack.name) },
             sequenceNumber = sequenceNumber,
-            categories = categories.map { Category.entries.find { c -> c.category.equals(it.category.name) } }.toList(),
-            pokemon = Pokemon(
+            categories = categories.map {
+                com.trading.tcg.application.card.domain.Category.entries.find { c ->
+                    c.category.equals(
+                        it.category.name
+                    )
+                }
+            }.toList(),
+            pokemon = com.trading.tcg.application.card.domain.Pokemon(
                 pokemon.id,
                 pokemon.name,
                 pokemon.info,
@@ -81,7 +87,15 @@ class CardEntity(
                 pokemon.createdTime,
                 pokemon.updatedTime
             ),
-            abilities = abilities.map { CardAbility(it.id, it.type?.split("\n") ?: emptyList(), it.name, it.value, it.description) },
+            abilities = abilities.map {
+                com.trading.tcg.application.card.domain.CardAbility(
+                    it.id,
+                    it.type?.split("\n") ?: emptyList(),
+                    it.name,
+                    it.value,
+                    it.description
+                )
+            },
             createdTime = createdTime,
             updatedTime = updatedTime
         )

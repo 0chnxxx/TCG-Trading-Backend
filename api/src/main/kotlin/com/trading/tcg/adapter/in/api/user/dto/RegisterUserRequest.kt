@@ -1,6 +1,6 @@
 package com.trading.tcg.adapter.`in`.api.user.dto
 
-import com.trading.tcg.user.dto.request.RegisterUserCommand
+import com.trading.tcg.application.user.dto.request.RegisterUserCommand
 
 data class RegisterUserRequest(
     val email: String,
