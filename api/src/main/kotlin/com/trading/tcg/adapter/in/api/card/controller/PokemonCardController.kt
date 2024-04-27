@@ -28,7 +28,6 @@ class PokemonCardController(
 ) {
     @Operation(summary = "포켓몬 카드 리스트 조회", description = "포켓몬 카드 리스트를 조회한다.")
     @GetMapping("/cards")
-    @PreAuthorize("hasAuthority('GUEST')")
     fun findCards(
         @AuthenticationPrincipal
         provider: Provider,
@@ -50,6 +49,7 @@ class PokemonCardController(
     }
 
     @Operation(summary = "포켓몬 카드 단건 조회", description = "포켓몬 카드 단건을 조회한다.")
+    @PreAuthorize("hasRole('GUEST')")
     @GetMapping("/cards/{cardId}")
     fun findCard(
         @AuthenticationPrincipal

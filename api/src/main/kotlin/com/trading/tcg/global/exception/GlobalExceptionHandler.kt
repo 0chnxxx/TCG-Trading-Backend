@@ -5,10 +5,11 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import java.lang.Exception
+import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -36,8 +37,43 @@ class GlobalExceptionHandler {
         return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(e.errorCode.getStatusCode()))
     }
 
+    @ExceptionHandler(value = [NoResourceFoundException::class])
+    fun handleNoResourceFoundException(
+        e: NoResourceFoundException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        val errorCode = ServiceErrorCode.NOT_FOUND
+
+        val errorResponse = ErrorResponse.of(
+            path = request.requestURI,
+            errorCode = errorCode.getErrorCode(),
+            errorMessage = errorCode.getErrorMessage()
+        )
+
+        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.getStatusCode()))
+    }
+
+    @ExceptionHandler(value = [AccessDeniedException::class])
+    fun handleAccessDeniedException(
+        e: AccessDeniedException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        val errorCode = ServiceErrorCode.FORBIDDEN
+
+        val errorResponse = ErrorResponse.of(
+            path = request.requestURI,
+            errorCode = errorCode.getErrorCode(),
+            errorMessage = errorCode.getErrorMessage()
+        )
+
+        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.getStatusCode()))
+    }
+
     @ExceptionHandler(value = [ConstraintViolationException::class])
-    fun handleConstraintViolationException(e: ConstraintViolationException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
+    fun handleConstraintViolationException(
+        e: ConstraintViolationException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
         val errorCode = ServiceErrorCode.entries.first { it ->
             e.constraintViolations.map { it.messageTemplate }.contains(it.getErrorMessage())
         }
@@ -52,8 +88,12 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = [MethodArgumentNotValidException::class])
-    fun handleMethodArgumentNotValidException(e: MethodArgumentNotValidException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
-        val errorCode = ServiceErrorCode.entries.first { e.bindingResult.fieldError?.defaultMessage.equals(it.getErrorMessage()) }
+    fun handleMethodArgumentNotValidException(
+        e: MethodArgumentNotValidException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        val errorCode =
+            ServiceErrorCode.entries.first { e.bindingResult.fieldError?.defaultMessage.equals(it.getErrorMessage()) }
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,

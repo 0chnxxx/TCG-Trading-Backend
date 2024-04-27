@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -18,6 +19,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configurers.*
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.AuthenticationException
 import org.springframework.security.crypto.factory.PasswordEncoderFactories
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.AuthenticationEntryPoint
@@ -44,8 +46,7 @@ class SecurityConfig(
     @Bean
     @Throws(Exception::class)
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        //HttpSecurity 기본 설정
-        http
+        return http
             .httpBasic { config: HttpBasicConfigurer<HttpSecurity> ->
                 config.disable()
             }
@@ -81,12 +82,11 @@ class SecurityConfig(
             }
             .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterAfter(customAnonymousAuthenticationFilter, AnonymousAuthenticationFilter::class.java)
-
-        return http.build()
+            .build()
     }
 
     private val authenticationEntryPoint =
-        AuthenticationEntryPoint { request: HttpServletRequest, response: HttpServletResponse, authException: org.springframework.security.core.AuthenticationException? ->
+        AuthenticationEntryPoint { request: HttpServletRequest, response: HttpServletResponse, authenticationException: AuthenticationException? ->
             val errorCode = ServiceErrorCode.UNAUTHORIZED
 
             val errorResponse = ErrorResponse.of(
@@ -103,7 +103,7 @@ class SecurityConfig(
         }
 
     private val accessDeniedHandler =
-        AccessDeniedHandler { request: HttpServletRequest, response: HttpServletResponse, accessDeniedException: org.springframework.security.access.AccessDeniedException? ->
+        AccessDeniedHandler { request: HttpServletRequest, response: HttpServletResponse, accessDeniedException: AccessDeniedException? ->
             val errorCode = ServiceErrorCode.FORBIDDEN
 
             val errorResponse = ErrorResponse.of(
