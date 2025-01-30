@@ -23,7 +23,7 @@ class SwaggerConfig {
             .info(
                 Info()
                     .title("TCG-Trading API")
-                    .description("TCG-Trading System의 API 명세서입니다.")
+                    .description("TCG-Trading의 API 명세서입니다.")
                     .version("v0.0.1")
             )
     }
