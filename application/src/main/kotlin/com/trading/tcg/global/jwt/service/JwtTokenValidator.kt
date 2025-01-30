@@ -1,6 +1,5 @@
 package com.trading.tcg.global.jwt.service
 
-import com.trading.tcg.application.user.domain.UserProvider
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.exception.ServiceErrorCode
 import com.trading.tcg.global.jwt.dto.response.DecodedToken
@@ -26,8 +25,7 @@ class JwtTokenValidator {
                 .parseClaimsJws(token)
 
             return DecodedToken(
-                email = decodedToken.body.subject,
-                provider = UserProvider.valueOf(decodedToken.body.audience)
+                email = decodedToken.body.subject
             )
         } catch (e: ExpiredJwtException) {
             throw CustomException(ServiceErrorCode.EXPIRED_JWT)

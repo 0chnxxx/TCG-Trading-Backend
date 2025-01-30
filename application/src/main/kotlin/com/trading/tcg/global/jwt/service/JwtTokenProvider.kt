@@ -27,9 +27,7 @@ class JwtTokenProvider {
             .setHeaderParam("typ", "JWT")
             .setHeaderParam("alg", "HS512")
             .setClaims(
-                Jwts.claims()
-                    .setSubject(command.user.email)
-                    .setAudience(command.provider.name)
+                Jwts.claims().setSubject(command.user.email)
             )
             .setIssuedAt(Date(System.currentTimeMillis()))
             .setExpiration(Date(System.currentTimeMillis() + ACCESS_EXPIRATION_TIME))
@@ -43,9 +41,7 @@ class JwtTokenProvider {
             .setHeaderParam("typ", "JWT")
             .setHeaderParam("alg", "HS512")
             .setClaims(
-                Jwts.claims()
-                    .setSubject(command.user.email)
-                    .setAudience(command.provider.name)
+                Jwts.claims().setSubject(command.user.email)
             )
             .setIssuedAt(Date(System.currentTimeMillis()))
             .setExpiration(Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME))

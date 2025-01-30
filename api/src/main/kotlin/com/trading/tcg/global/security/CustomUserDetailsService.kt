@@ -21,8 +21,7 @@ class CustomUserDetailsService(
     override fun loadUserByUsername(email: String?): UserDetails {
         val token = request.getHeader("Authorization")
         val decodedToken = jwtTokenValidator.validate(token)
-        val user =
-            userPersistencePort.findByEmail(decodedToken.email) ?: throw CustomException(ServiceErrorCode.NOT_FOUND)
+        val user = userPersistencePort.findByEmail(decodedToken.email) ?: throw CustomException(ServiceErrorCode.NOT_FOUND)
 
         return HttpProvider(user)
     }
