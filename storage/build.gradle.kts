@@ -15,6 +15,6 @@ dependencies {
     //JDBC
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
 
-    //PostgreSQL Driver
-    runtimeOnly("org.postgresql:postgresql")
+    //MySQL
+    runtimeOnly("com.mysql:mysql-connector-j")
 }

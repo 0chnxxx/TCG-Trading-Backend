@@ -1,7 +1,6 @@
 package com.trading.tcg.application.user.service
 
 import com.trading.tcg.application.user.domain.User
-import com.trading.tcg.application.user.domain.UserProvider
 import com.trading.tcg.application.user.domain.UserRole
 import com.trading.tcg.application.user.dto.request.LoginUserCommand
 import com.trading.tcg.application.user.dto.request.RegisterUserCommand
@@ -37,8 +36,7 @@ class UserService(
         user = userPersistencePort.save(user)
 
         val createTokenCommand = CreateTokenCommand(
-            user = user,
-            provider = UserProvider.USER
+            user = user
         )
 
         val token = jwtTokenProvider.createToken(createTokenCommand)
@@ -60,8 +58,7 @@ class UserService(
         }
 
         val createTokenCommand = CreateTokenCommand(
-            user = user,
-            provider = UserProvider.USER
+            user = user
         )
 
         val token = jwtTokenProvider.createToken(createTokenCommand)

@@ -1,23 +1,28 @@
 package com.trading.tcg.application.card.domain
 
-enum class Rank(val rank: String) {
-    CSR("CSR"),
-    CHR("CHR"),
-    LIGHT("빛"),
-    K("K"),
-    P("P"),
-    PR("PR"),
+enum class Rank(
+    val rank: String
+) {
+    C("C"),
+    U("U"),
+    R("R"),
     RR("RR"),
-    H("H"),
     RRR("RRR"),
-    SR("SR"),
+    H("H"),
+    PR("PR"),
     S("S"),
     HR("HR"),
-    R("R"),
-    U("U"),
+    SR("SR"),
+    UR("UR"),
+    AR("AR"),
+    CHR("CHR"),
+    CSR("CSR"),
+    SAR("SAR"),
     SSR("SSR"),
     A("A"),
-    C("C"),
-    AR("AR"),
-    SAR("SAR")
+    ACE("ACE"),
+    K("K"),
+    TR("TR"),
+    P("P"),
+    LIGHT("(빛)")
 }

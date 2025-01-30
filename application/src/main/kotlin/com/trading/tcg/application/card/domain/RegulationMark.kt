@@ -1,13 +1,15 @@
 package com.trading.tcg.application.card.domain
 
-enum class RegulationMark(val mark: String) {
-    B("B"),
-    XY("XY"),
-    E("E"),
-    D("D"),
+enum class RegulationMark(
+    val mark: String
+) {
     A("A"),
+    B("B"),
     C("C"),
-    H("H"),
+    D("D"),
+    E("E"),
+    F("F"),
     G("G"),
-    F("F")
+    H("H"),
+    XY("XY")
 }

@@ -19,18 +19,9 @@ class UserEntity(
     @Column(name = "password", nullable = false)
     val password: String,
 
-    @Column(name = "kakao_id")
-    val kakaoId: String?,
-
-    @Column(name = "apple_id")
-    val appleId: String?,
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    val role: UserRole,
-
-    @Column(name = "fcm_token")
-    val fcmToken: String?
+    val role: UserRole
 ) : BaseEntity() {
     companion object {
         @JvmStatic
@@ -38,10 +29,7 @@ class UserEntity(
             return UserEntity(
                 email = user.email,
                 password = user.password,
-                kakaoId = user.kakaoId,
-                appleId = user.appleId,
-                role = user.role,
-                fcmToken = user.fcmToken,
+                role = user.role
             )
         }
     }
@@ -51,10 +39,7 @@ class UserEntity(
             id = id,
             email = email,
             password = password,
-            kakaoId = kakaoId,
-            appleId = appleId,
             role = role,
-            fcmToken = fcmToken,
             createdTime = createdTime,
             updatedTime = updatedTime
         )

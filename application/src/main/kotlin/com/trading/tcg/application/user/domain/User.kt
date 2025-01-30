@@ -9,10 +9,7 @@ class User(
     val id: Long? = null,
     val email: String,
     val password: String,
-    val kakaoId: String? = null,
-    val appleId: String? = null,
     val role: UserRole,
-    val fcmToken: String? = null,
     val createdTime: LocalDateTime? = null,
     val updatedTime: LocalDateTime? = null
 ) {

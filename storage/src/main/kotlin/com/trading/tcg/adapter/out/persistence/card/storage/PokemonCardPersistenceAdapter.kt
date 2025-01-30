@@ -1,8 +1,8 @@
 package com.trading.tcg.adapter.out.persistence.card.storage
 
-import com.trading.tcg.adapter.out.persistence.card.entity.CardEntity
-import com.trading.tcg.application.card.domain.Card
-import com.trading.tcg.application.card.dto.request.FindPokemonCardQuery
+import com.trading.tcg.adapter.out.persistence.card.entity.PokemonCardEntity
+import com.trading.tcg.application.card.domain.PokemonCard
+import com.trading.tcg.application.card.dto.request.FindPokemonCardsQuery
 import com.trading.tcg.application.card.port.out.PokemonCardPersistencePort
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -13,15 +13,15 @@ import java.util.*
 class PokemonCardPersistenceAdapter(
     private val pokemonCardJpaRepository: PokemonCardJpaRepository
 ) : PokemonCardPersistencePort {
-    override fun findPokemonCards(query: FindPokemonCardQuery): List<Card> {
-        val pageable: Pageable = Pageable.ofSize(query.size).withPage(query.page)
-        val entities: Page<CardEntity> = pokemonCardJpaRepository.findAll(pageable)
+    override fun findPokemonCards(query: FindPokemonCardsQuery): List<PokemonCard> {
+        val pageable: Pageable = Pageable.ofSize(query.size).withPage(query.page - 1)
+        val entities: Page<PokemonCardEntity> = pokemonCardJpaRepository.findAll(pageable)
 
         return entities.map { it.toDomain() }.toList()
     }
 
-    override fun findPokemonCard(cardId: Long): Optional<Card> {
-        val entity: Optional<CardEntity> = pokemonCardJpaRepository.findById(cardId)
+    override fun findPokemonCard(cardId: Long): Optional<PokemonCard> {
+        val entity: Optional<PokemonCardEntity> = pokemonCardJpaRepository.findById(cardId)
 
         return entity.map { it.toDomain() }
     }

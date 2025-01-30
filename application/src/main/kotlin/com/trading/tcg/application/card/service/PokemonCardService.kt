@@ -1,6 +1,6 @@
 package com.trading.tcg.application.card.service
 
-import com.trading.tcg.application.card.dto.request.FindPokemonCardQuery
+import com.trading.tcg.application.card.dto.request.FindPokemonCardsQuery
 import com.trading.tcg.application.card.dto.response.PokemonCardDetailDto
 import com.trading.tcg.application.card.dto.response.PokemonCardDto
 import com.trading.tcg.application.card.port.`in`.FindPokemonCardUseCase
@@ -22,7 +22,7 @@ class PokemonCardService(
     @Transactional(readOnly = true)
     override fun findPokemonCards(
         provider: Provider,
-        query: FindPokemonCardQuery
+        query: FindPokemonCardsQuery
     ): Response<List<PokemonCardDto>> {
         val pokemonCards = pokemonCardPersistencePort.findPokemonCards(query)
 

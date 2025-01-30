@@ -1,84 +1,80 @@
 package com.trading.tcg.application.card.dto.response
 
-import com.trading.tcg.application.card.domain.Card
+import com.trading.tcg.application.card.domain.*
 import java.time.LocalDateTime
 
 data class PokemonCardDetailDto(
     val id: Long? = null,
-    val type: String,
     val code: String,
+    val pack: Pack,
+    val serialCode: String? = null,
+    val sequenceNumber: String? = null,
+    val name: String,
+    val categories: List<String>,
+    val type: String? = null,
+    val level: String? = null,
+    val hp: String? = null,
     val image: String,
-    val imageIllustrator: String? = null,
-    val serialCode: String,
+    val illustrator: String? = null,
+    val weaknessType: String? = null,
+    val weaknessValue: String? = null,
+    val resistanceType: String? = null,
+    val resistanceValue: String? = null,
+    val retreatValue: Int? = null,
     val regulationMark: String? = null,
     val rank: String? = null,
-    val sequenceNumber: String,
-    val categories: List<String?>,
-    val packs: List<String>,
-    val abilities: List<Ability>,
-    val pokemon: Pokemon,
+    val skills: List<Skill>,
     val createdTime: LocalDateTime,
     val updatedTime: LocalDateTime? = null
 ) {
-    data class Ability(
+    data class Pack(
         val id: Long?,
-        val types: List<String>,
-        val name: String,
-        val value: String?,
-        val description: String?
+        val name: String? = null
     )
 
-    data class Pokemon(
-        val name: String,
-        val info: String? = null,
-        val description: String? = null,
-        val level: Int? = null,
-        val hp: Int,
+    data class Skill(
+        val id: Long? = null,
+        val name: String? = null,
         val type: String? = null,
-        val weaknessType: String? = null,
-        val weaknessValue: String? = null,
-        val resistanceType: String? = null,
-        val resistanceValue: String? = null,
-        val retreatValue: Int? = null,
+        val damage: String? = null,
+        val description: String? = null
     )
 
     companion object {
         @JvmStatic
-        fun ofDomain(card: Card): PokemonCardDetailDto {
+        fun ofDomain(card: PokemonCard): PokemonCardDetailDto {
             return PokemonCardDetailDto(
                 id = card.id,
-                type = card.type.name,
                 code = card.code,
-                image = card.image,
-                imageIllustrator = card.imageIllustrator,
-                serialCode = card.serialCode.name,
-                regulationMark = card.regulationMark?.name,
-                rank = card.rank?.name,
-                packs = card.packs.map { it.name },
+                pack = Pack(
+                    card.pack.id,
+                    card.pack.name
+                ),
+                serialCode = card.serialCode,
                 sequenceNumber = card.sequenceNumber,
-                categories = card.categories.map { it?.category },
-                abilities = card.abilities.map {
-                    Ability(
+                name = card.name,
+                categories = card.categories.map { it.let { it.category } },
+                type = card.type,
+                level = card.level,
+                hp = card.hp,
+                image = card.image,
+                illustrator = card.illustrator,
+                weaknessType = card.weaknessType,
+                weaknessValue = card.weaknessValue,
+                resistanceType = card.resistanceType,
+                resistanceValue = card.resistanceValue,
+                retreatValue = card.retreatValue,
+                regulationMark = card.regulationMark,
+                rank = card.rank.let { it!!.rank },
+                skills = card.skills.map {
+                    Skill(
                         it.id,
-                        it.types,
                         it.name,
-                        it.value,
+                        it.type,
+                        it.damage,
                         it.description
                     )
                 },
-                pokemon = Pokemon(
-                    card.pokemon.name,
-                    card.pokemon.info,
-                    card.pokemon.description,
-                    card.pokemon.level,
-                    card.pokemon.hp,
-                    card.pokemon.type?.name,
-                    card.pokemon.weaknessType?.name,
-                    card.pokemon.weaknessValue,
-                    card.pokemon.resistanceType?.name,
-                    card.pokemon.resistanceValue,
-                    card.pokemon.retreatValue
-                ),
                 createdTime = card.createdTime,
                 updatedTime = card.updatedTime
             )

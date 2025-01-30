@@ -1,6 +1,8 @@
 package com.trading.tcg.application.card.domain
 
-enum class SerialCode(val code: String) {
+enum class SerialCode(
+    val code: String
+) {
     RBD("RBD"),
     FSG("FSG"),
     SML("SML"),

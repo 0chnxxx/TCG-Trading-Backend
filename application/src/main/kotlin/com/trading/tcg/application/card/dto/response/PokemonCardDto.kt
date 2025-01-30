@@ -1,6 +1,6 @@
 package com.trading.tcg.application.card.dto.response
 
-import com.trading.tcg.application.card.domain.Card
+import com.trading.tcg.application.card.domain.PokemonCard
 
 data class PokemonCardDto(
     val id: Long? = null,
@@ -8,10 +8,10 @@ data class PokemonCardDto(
 ) {
     companion object {
         @JvmStatic
-        fun ofDomain(card: Card): PokemonCardDto {
+        fun ofDomain(pokemonCard: PokemonCard): PokemonCardDto {
             return PokemonCardDto(
-                id = card.id,
-                cardImage = card.image
+                id = pokemonCard.id,
+                cardImage = pokemonCard.image
             )
         }
     }
