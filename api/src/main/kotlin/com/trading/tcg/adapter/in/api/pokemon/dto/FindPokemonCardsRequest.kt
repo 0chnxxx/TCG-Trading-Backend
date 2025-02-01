@@ -15,6 +15,8 @@ data class FindPokemonCardsRequest(
     val size: Int?
 ): SelfValidator() {
     fun toQuery(): FindPokemonCardsQuery {
+        validate()
+
         return FindPokemonCardsQuery(
             page = page!!,
             size = size!!

@@ -6,11 +6,7 @@ import jakarta.validation.Validation
 open class SelfValidator {
     private val validator = Validation.buildDefaultValidatorFactory().validator
 
-    init {
-        validate()
-    }
-
-    private fun validate() {
+    fun validate() {
         val violations = validator.validate(this)
 
         if (violations.isNotEmpty()) {
