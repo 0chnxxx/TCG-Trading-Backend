@@ -25,4 +25,8 @@ class PokemonCardPersistenceAdapter(
 
         return entity.map { it.toDomain() }
     }
+
+    override fun count(): Long {
+        return pokemonCardJpaRepository.count()
+    }
 }

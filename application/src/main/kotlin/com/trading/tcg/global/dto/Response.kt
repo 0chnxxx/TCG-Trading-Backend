@@ -28,20 +28,20 @@ data class Response<T>(
         val page: Int,
         val size: Int,
         val totalPages: Int,
-        val totalElements: Int,
+        val totalElements: Long,
         val isFirst: Boolean,
         val isLast: Boolean
     ) {
         companion object {
             @JvmStatic
-            fun of(count: Int, page: Int, size: Int): PageResult {
+            fun of(totalCount: Long, page: Int, size: Int): PageResult {
                 return PageResult(
                     page = page,
                     size = size,
-                    totalPages = ceil(count.toDouble() / size).toInt(),
-                    totalElements = count,
+                    totalPages = ceil(totalCount.toDouble() / size).toInt(),
+                    totalElements = totalCount,
                     isFirst = page == 1,
-                    isLast = (count - ((page - 1) * size)) <= size
+                    isLast = (totalCount - ((page - 1) * size)) <= size
                 )
             }
         }

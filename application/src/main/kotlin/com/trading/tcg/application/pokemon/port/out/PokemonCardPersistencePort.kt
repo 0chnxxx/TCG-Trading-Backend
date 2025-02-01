@@ -7,4 +7,5 @@ import java.util.*
 interface PokemonCardPersistencePort {
     fun findPokemonCards(query: FindPokemonCardsQuery): List<PokemonCard>
     fun findPokemonCard(cardId: Long): Optional<PokemonCard>
+    fun count(): Long
 }

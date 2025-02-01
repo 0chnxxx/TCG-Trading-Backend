@@ -24,13 +24,14 @@ class PokemonCardService(
         provider: Provider,
         query: FindPokemonCardsQuery
     ): Response<List<PokemonCardDto>> {
+        val totalCount = pokemonCardPersistencePort.count()
         val pokemonCards = pokemonCardPersistencePort.findPokemonCards(query)
 
         return Response.of(
             pageResult = Response.PageResult.of(
-                pokemonCards.size,
-                query.page,
-                query.size
+                totalCount = totalCount,
+                page = query.page,
+                size = query.size
             ),
             data = pokemonCards.stream()
                 .map { PokemonCardDto.ofDomain(it) }
