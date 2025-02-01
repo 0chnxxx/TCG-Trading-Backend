@@ -32,7 +32,12 @@ class UserService(
             role = UserRole.GUEST
         )
 
-        user.checkDuplicateEmail(userPersistencePort)
+        val duplicatedUser = userPersistencePort.findByEmail(user.email)
+
+        if (duplicatedUser != null) {
+            throw CustomException(ServiceErrorCode.DUPLICATED_EMAIL)
+        }
+
         user = userPersistencePort.save(user)
 
         val createTokenCommand = CreateTokenCommand(
