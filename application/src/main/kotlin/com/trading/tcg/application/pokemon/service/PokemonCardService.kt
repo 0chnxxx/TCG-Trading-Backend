@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 class PokemonCardService(
     private val pokemonCardPersistencePort: PokemonCardPersistencePort
@@ -24,7 +23,7 @@ class PokemonCardService(
         provider: Provider,
         query: FindPokemonCardsQuery
     ): Response<List<PokemonCardDto>> {
-        val totalCount = pokemonCardPersistencePort.count()
+        val totalCount = pokemonCardPersistencePort.countPokemonCards()
         val pokemonCards = pokemonCardPersistencePort.findPokemonCards(query)
 
         return Response.of(

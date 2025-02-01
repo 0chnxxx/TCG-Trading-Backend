@@ -1,6 +1,7 @@
 package com.trading.tcg.adapter.out.persistence.pokemon.entity
 
 import com.trading.tcg.adapter.out.persistence.global.BaseEntity
+import com.trading.tcg.adapter.out.persistence.product.entity.ProductEntity
 import com.trading.tcg.application.pokemon.domain.*
 import jakarta.persistence.*
 
@@ -11,6 +12,9 @@ class PokemonCardEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     val id: Long? = null,
+
+    @OneToOne(fetch = FetchType.LAZY)
+    val product: ProductEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
     val pack: PokemonCardPackEntity,

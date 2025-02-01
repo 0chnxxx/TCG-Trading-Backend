@@ -19,12 +19,12 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 class UserService(
     private val userPersistencePort: UserPersistencePort,
     private val jwtTokenProvider: JwtTokenProvider
 ) : RegisterUserUseCase, LoginUserUseCase {
+    @Transactional
     override fun register(command: RegisterUserCommand): Response<JwtToken> {
         var user = User(
             email = command.email,
@@ -46,6 +46,7 @@ class UserService(
         )
     }
 
+    @Transactional
     override fun login(command: LoginUserCommand): Response<JwtToken> {
         val user = userPersistencePort.findByEmail(command.email)
 
