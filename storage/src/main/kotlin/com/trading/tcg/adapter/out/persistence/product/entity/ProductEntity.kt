@@ -29,10 +29,10 @@ class ProductEntity(
     @Column(name = "deal_count")
     val dealCount: Int,
 
-    @Column(name = "deal_count")
+    @Column(name = "buy_bid_count")
     val buyBidCount: Int,
 
-    @Column(name = "deal_count")
+    @Column(name = "sell_bid_count")
     val sellBidCount: Int
 ): BaseEntity() {
 }

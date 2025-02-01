@@ -15,15 +15,15 @@ class ProductDealEntity(
     val id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", nullable = false)
     val product: ProductEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "buyer_id", nullable = false)
+    @JoinColumn(name = "buyer_id", nullable = false)
     val buyer: UserEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "seller_id", nullable = false)
+    @JoinColumn(name = "seller_id", nullable = false)
     val seller: UserEntity,
 
     @Enumerated(EnumType.STRING)
