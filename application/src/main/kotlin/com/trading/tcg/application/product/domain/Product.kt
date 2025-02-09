@@ -1,13 +1,19 @@
 package com.trading.tcg.application.product.domain
 
+import com.trading.tcg.application.card.domain.Card
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class Product(
     val id: Long?,
-    //최근거래가
-    //즉시구매가
-    //즉시판매가
-    //
+    val card: Card,
+    val recentPrice: BigDecimal?,
+    val directBuyPrice: BigDecimal?,
+    val directSellPrice: BigDecimal?,
+    val dealCount: Int,
+    val buyBidCount: Int,
+    val sellBidCount: Int,
+    val bookmarkCount: Int,
     val createdTime: LocalDateTime,
     val updatedTime: LocalDateTime?
 )

@@ -3,15 +3,13 @@ package com.trading.tcg.adapter.out.persistence.pokemon.entity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "pokemon_card_category")
-data class PokemonCardCategoryEntity(
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_id", nullable = false)
-    val card: PokemonCardEntity,
-
+@Table(name = "pokemon_card_category_catalog")
+class PokemonCardCategoryEntity(
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    val category: PokemonCategoryEntity
-) {
-}
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    val id: Long?,
+
+    @Column(name = "name", nullable = false)
+    val name: String
+)

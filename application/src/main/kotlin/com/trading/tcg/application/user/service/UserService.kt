@@ -4,8 +4,7 @@ import com.trading.tcg.application.user.domain.User
 import com.trading.tcg.application.user.domain.UserRole
 import com.trading.tcg.application.user.dto.request.LoginUserCommand
 import com.trading.tcg.application.user.dto.request.RegisterUserCommand
-import com.trading.tcg.application.user.port.`in`.LoginUserUseCase
-import com.trading.tcg.application.user.port.`in`.RegisterUserUseCase
+import com.trading.tcg.application.user.port.`in`.UserUseCase
 import com.trading.tcg.application.user.port.out.UserPersistencePort
 import com.trading.tcg.global.dto.Response
 import com.trading.tcg.global.exception.CustomException
@@ -23,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 class UserService(
     private val userPersistencePort: UserPersistencePort,
     private val jwtTokenProvider: JwtTokenProvider
-) : RegisterUserUseCase, LoginUserUseCase {
+) : UserUseCase {
     @Transactional
     override fun register(command: RegisterUserCommand): Response<JwtToken> {
         var user = User(

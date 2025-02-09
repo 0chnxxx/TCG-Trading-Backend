@@ -1,6 +1,6 @@
 package com.trading.tcg.adapter.out.persistence.product.entity
 
-import com.trading.tcg.adapter.out.persistence.global.BaseEntity
+import com.trading.tcg.adapter.out.persistence.global.entity.BaseEntity
 import com.trading.tcg.adapter.out.persistence.user.entity.UserEntity
 import com.trading.tcg.application.product.domain.ProductDealType
 import jakarta.persistence.*

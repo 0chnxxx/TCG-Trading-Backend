@@ -1,17 +1,25 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val projectGroup: String by project
+val applicationVersion: String by project
+val javaVersion: String by project
+val jvmVersion: String by project
+
 plugins {
-    id("org.springframework.boot") version "3.2.3"
-    id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.spring") version "1.9.22"
-    kotlin("plugin.jpa") version "1.9.22"
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
+    kotlin("jvm")
+    kotlin("plugin.spring")
 }
 
+// 공통 설정
 allprojects {
-    group = "com.trading.tcg"
-    version = "0.0.1"
+    // 프로젝트 정보
+    group = projectGroup
+    version = applicationVersion
 
+    // 라이브러리 저장소 지정
     repositories {
         mavenCentral()
     }
@@ -21,31 +29,37 @@ allprojects {
     apply(plugin = "org.springframework.boot")
     apply(plugin = "io.spring.dependency-management")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
-    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
 
+    // Java 코드 JVM 버전 지정
     java {
-        sourceCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.valueOf(javaVersion)
+        targetCompatibility = JavaVersion.valueOf(javaVersion)
     }
 
+    // Kotlin 코드 JVM 버전 지정
     tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            freeCompilerArgs += "-Xjsr305=strict"
-            jvmTarget = "17"
+        kotlin {
+            compilerOptions {
+                jvmTarget.set(JvmTarget.valueOf(jvmVersion))
+                freeCompilerArgs.add("-Xjsr305=strict")
+            }
         }
     }
 
     tasks.withType<Test> {
         useJUnitPlatform()
     }
-}
 
-subprojects {
+    // annotationProcessor 설정
     configurations {
         compileOnly {
             extendsFrom(configurations.annotationProcessor.get())
         }
     }
+}
 
+// 공통 의존성
+subprojects {
     dependencies {
         //Lombok
         compileOnly("org.projectlombok:lombok")

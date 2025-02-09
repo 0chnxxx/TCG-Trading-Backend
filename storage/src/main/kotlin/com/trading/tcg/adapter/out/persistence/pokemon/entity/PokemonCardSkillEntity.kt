@@ -1,10 +1,6 @@
 package com.trading.tcg.adapter.out.persistence.pokemon.entity
 
-import com.trading.tcg.adapter.out.persistence.global.BaseEntity
-import com.trading.tcg.application.pokemon.domain.PokemonCard
-import com.trading.tcg.application.pokemon.domain.PokemonCardPack
-import com.trading.tcg.application.pokemon.domain.PokemonCardSkill
-import com.trading.tcg.application.pokemon.domain.PokemonCategory
+import com.trading.tcg.application.card.domain.PokemonCardSkill
 import jakarta.persistence.*
 
 @Entity
@@ -13,24 +9,24 @@ data class PokemonCardSkillEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    val id: Long? = null,
+    val id: Long?,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "card_id", nullable = false)
     val card: PokemonCardEntity,
 
     @Column(name = "name")
-    val name: String? = null,
+    val name: String?,
 
     @Column(name = "type")
-    val type: String? = null,
+    val type: String?,
 
     @Column(name = "damage")
-    val damage: String? = null,
+    val damage: String?,
 
     @Column(name = "description", nullable = false)
-    val description: String? = null
-) : BaseEntity() {
+    val description: String?
+) {
     fun toDomain(): PokemonCardSkill {
         return PokemonCardSkill(
             id = id,
