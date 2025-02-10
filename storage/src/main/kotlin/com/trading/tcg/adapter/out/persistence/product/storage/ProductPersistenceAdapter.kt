@@ -10,14 +10,9 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
-import com.trading.tcg.adapter.out.persistence.digimon.entity.QDigimonCardEntity
-import com.trading.tcg.adapter.out.persistence.digimon.entity.QDigimonCardPackEntity
-import com.trading.tcg.adapter.out.persistence.pokemon.entity.QPokemonCardEntity
-import com.trading.tcg.adapter.out.persistence.pokemon.entity.QPokemonCardPackCatalogEntity
-import com.trading.tcg.adapter.out.persistence.pokemon.entity.QPokemonCardPackEntity
+import com.trading.tcg.adapter.out.persistence.card.entity.*
 import com.trading.tcg.adapter.out.persistence.product.entity.*
 import com.trading.tcg.adapter.out.persistence.user.entity.QUserProductBookmarkEntity
-import com.trading.tcg.adapter.out.persistence.yugioh.entity.*
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
 import com.trading.tcg.application.product.dto.response.ProductCatalogDto
@@ -26,7 +21,6 @@ import com.trading.tcg.application.product.dto.response.ProductDto
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
 import com.trading.tcg.global.dto.Pageable
 import org.springframework.stereotype.Repository
-import java.util.*
 
 @Repository
 class ProductPersistenceAdapter(

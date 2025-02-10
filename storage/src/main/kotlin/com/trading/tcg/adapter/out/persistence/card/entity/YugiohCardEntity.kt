@@ -1,23 +1,23 @@
-package com.trading.tcg.adapter.out.persistence.pokemon.entity
+package com.trading.tcg.adapter.out.persistence.card.entity
 
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductBuyBidEntity
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductDealEntity
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductEntity
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductSellBidEntity
 import com.trading.tcg.adapter.out.persistence.user.entity.UserProductBookmarkEntity
-import com.trading.tcg.application.card.domain.PokemonCard
+import com.trading.tcg.application.card.domain.YugiohCard
 import com.trading.tcg.application.product.domain.Product
 import jakarta.persistence.*
 import java.math.BigDecimal
 
 @Entity
-@Table(name = "pokemon_card")
-@DiscriminatorValue("POKEMON")
-class PokemonCardEntity(
+@Table(name = "yugioh_card")
+@DiscriminatorValue("YUGIOH")
+class YugiohCardEntity(
     id: Long?,
 
     @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
-    val packs: List<PokemonCardPackCatalogEntity>,
+    val packs: List<YugiohCardPackCatalogEntity>,
 
     @Column(name = "code", nullable = false)
     val code: String,
@@ -32,43 +32,37 @@ class PokemonCardEntity(
     val categories: String,
 
     @Column(name = "type", nullable = false)
-    val type: String?,
+    val type: String,
 
-    @Column(name = "serial_code", nullable = false)
-    val serialCode: String?,
+    @Column(name = "effect")
+    val effect: String?,
 
-    @Column(name = "sequence_number", nullable = false)
-    val sequenceNumber: String?,
+    @Column(name = "species")
+    val species: String?,
 
-    @Column(name = "regulation_mark")
-    val regulationMark: String?,
+    @Column(name = "summon_type")
+    val summonType: String?,
 
-    @Column(name = "rank")
-    val rank: String?,
+    @Column(name = "summon_value")
+    val summonValue: Int?,
 
-    @Column(name = "level", nullable = false)
-    val level: String?,
+    @Column(name = "marker")
+    val marker: String?,
 
-    @Column(name = "hp", nullable = false)
-    val hp: String?,
+    @Column(name = "attack")
+    val attack: String?,
 
-    @Column(name = "weakness_type")
-    val weaknessType: String?,
+    @Column(name = "defence")
+    val defence: String?,
 
-    @Column(name = "weakness_value")
-    val weaknessValue: String?,
+    @Column(name = "pendulum_scale")
+    val pendulumScale: Int?,
 
-    @Column(name = "resistance_type")
-    val resistanceType: String?,
+    @Column(name = "pendulum_description")
+    val pendulumDescription: String?,
 
-    @Column(name = "resistance_value")
-    val resistanceValue: String?,
-
-    @Column(name = "retreat_value")
-    val retreatValue: Int?,
-
-    @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
-    val skills: List<PokemonCardSkillEntity>,
+    @Column(name = "description")
+    val description: String?,
 
     recentDealPrice: BigDecimal?,
 
@@ -108,25 +102,23 @@ class PokemonCardEntity(
     override fun toDomain(): Product {
         return Product(
             id = id,
-            card = PokemonCard(
+            card = YugiohCard(
                 packs = packs.map { it.pack.toDomain() },
                 code = code,
                 name = name,
                 image = image,
-                categories = emptyList(),
+                categories = categories.split("\n"),
                 type = type,
-                serialCode = serialCode,
-                sequenceNumber = sequenceNumber,
-                regulationMark = regulationMark,
-                rank = rank,
-                level = level,
-                hp = hp,
-                weaknessType = weaknessType,
-                weaknessValue = weaknessValue,
-                resistanceType = resistanceType,
-                resistanceValue = resistanceValue,
-                retreatValue = retreatValue,
-                skills = emptyList()
+                effect = effect,
+                species = species,
+                summonType = summonType,
+                summonValue = summonValue,
+                marker = marker,
+                attack = attack,
+                defence = defence,
+                pendulumScale = pendulumScale,
+                pendulumDescription = pendulumDescription,
+                description = description
             ),
             recentDealPrice = recentDealPrice,
             directBuyPrice = directBuyPrice,

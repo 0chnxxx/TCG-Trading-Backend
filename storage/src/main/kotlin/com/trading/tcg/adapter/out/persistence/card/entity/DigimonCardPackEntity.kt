@@ -1,4 +1,4 @@
-package com.trading.tcg.adapter.out.persistence.digimon.entity
+package com.trading.tcg.adapter.out.persistence.card.entity
 
 import com.trading.tcg.application.card.domain.DigimonCardPack
 import jakarta.persistence.*

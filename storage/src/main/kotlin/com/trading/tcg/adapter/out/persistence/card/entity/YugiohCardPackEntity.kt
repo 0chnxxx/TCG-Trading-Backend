@@ -1,4 +1,4 @@
-package com.trading.tcg.adapter.out.persistence.yugioh.entity
+package com.trading.tcg.adapter.out.persistence.card.entity
 
 import com.trading.tcg.application.card.domain.YugiohCardPack
 import jakarta.persistence.*

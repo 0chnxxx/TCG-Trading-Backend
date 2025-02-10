@@ -1,4 +1,4 @@
-package com.trading.tcg.adapter.out.persistence.pokemon.entity
+package com.trading.tcg.adapter.out.persistence.card.entity
 
 import com.trading.tcg.application.card.domain.PokemonCardPack
 import jakarta.persistence.*

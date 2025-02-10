@@ -1,23 +1,23 @@
-package com.trading.tcg.adapter.out.persistence.yugioh.entity
+package com.trading.tcg.adapter.out.persistence.card.entity
 
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductBuyBidEntity
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductDealEntity
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductEntity
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductSellBidEntity
 import com.trading.tcg.adapter.out.persistence.user.entity.UserProductBookmarkEntity
-import com.trading.tcg.application.card.domain.YugiohCard
+import com.trading.tcg.application.card.domain.PokemonCard
 import com.trading.tcg.application.product.domain.Product
 import jakarta.persistence.*
 import java.math.BigDecimal
 
 @Entity
-@Table(name = "yugioh_card")
-@DiscriminatorValue("YUGIOH")
-class YugiohCardEntity(
+@Table(name = "pokemon_card")
+@DiscriminatorValue("POKEMON")
+class PokemonCardEntity(
     id: Long?,
 
     @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
-    val packs: List<YugiohCardPackCatalogEntity>,
+    val packs: List<PokemonCardPackCatalogEntity>,
 
     @Column(name = "code", nullable = false)
     val code: String,
@@ -32,37 +32,43 @@ class YugiohCardEntity(
     val categories: String,
 
     @Column(name = "type", nullable = false)
-    val type: String,
+    val type: String?,
 
-    @Column(name = "effect")
-    val effect: String?,
+    @Column(name = "serial_code", nullable = false)
+    val serialCode: String?,
 
-    @Column(name = "species")
-    val species: String?,
+    @Column(name = "sequence_number", nullable = false)
+    val sequenceNumber: String?,
 
-    @Column(name = "summon_type")
-    val summonType: String?,
+    @Column(name = "regulation_mark")
+    val regulationMark: String?,
 
-    @Column(name = "summon_value")
-    val summonValue: Int?,
+    @Column(name = "rank")
+    val rank: String?,
 
-    @Column(name = "marker")
-    val marker: String?,
+    @Column(name = "level", nullable = false)
+    val level: String?,
 
-    @Column(name = "attack")
-    val attack: String?,
+    @Column(name = "hp", nullable = false)
+    val hp: String?,
 
-    @Column(name = "defence")
-    val defence: String?,
+    @Column(name = "weakness_type")
+    val weaknessType: String?,
 
-    @Column(name = "pendulum_scale")
-    val pendulumScale: Int?,
+    @Column(name = "weakness_value")
+    val weaknessValue: String?,
 
-    @Column(name = "pendulum_description")
-    val pendulumDescription: String?,
+    @Column(name = "resistance_type")
+    val resistanceType: String?,
 
-    @Column(name = "description")
-    val description: String?,
+    @Column(name = "resistance_value")
+    val resistanceValue: String?,
+
+    @Column(name = "retreat_value")
+    val retreatValue: Int?,
+
+    @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
+    val skills: List<PokemonCardSkillEntity>,
 
     recentDealPrice: BigDecimal?,
 
@@ -102,23 +108,25 @@ class YugiohCardEntity(
     override fun toDomain(): Product {
         return Product(
             id = id,
-            card = YugiohCard(
+            card = PokemonCard(
                 packs = packs.map { it.pack.toDomain() },
                 code = code,
                 name = name,
                 image = image,
-                categories = categories.split("\n"),
+                categories = emptyList(),
                 type = type,
-                effect = effect,
-                species = species,
-                summonType = summonType,
-                summonValue = summonValue,
-                marker = marker,
-                attack = attack,
-                defence = defence,
-                pendulumScale = pendulumScale,
-                pendulumDescription = pendulumDescription,
-                description = description
+                serialCode = serialCode,
+                sequenceNumber = sequenceNumber,
+                regulationMark = regulationMark,
+                rank = rank,
+                level = level,
+                hp = hp,
+                weaknessType = weaknessType,
+                weaknessValue = weaknessValue,
+                resistanceType = resistanceType,
+                resistanceValue = resistanceValue,
+                retreatValue = retreatValue,
+                skills = emptyList()
             ),
             recentDealPrice = recentDealPrice,
             directBuyPrice = directBuyPrice,
