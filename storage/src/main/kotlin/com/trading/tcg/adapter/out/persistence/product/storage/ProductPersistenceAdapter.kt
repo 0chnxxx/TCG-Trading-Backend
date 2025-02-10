@@ -1,6 +1,7 @@
 package com.trading.tcg.adapter.out.persistence.product.storage
 
 import com.querydsl.core.BooleanBuilder
+import com.querydsl.core.group.GroupBy
 import com.querydsl.core.types.ExpressionUtils
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
@@ -11,12 +12,11 @@ import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.trading.tcg.adapter.out.persistence.digimon.entity.QDigimonCardEntity
 import com.trading.tcg.adapter.out.persistence.pokemon.entity.QPokemonCardEntity
-import com.trading.tcg.adapter.out.persistence.product.entity.QProductBuyBidEntity
-import com.trading.tcg.adapter.out.persistence.product.entity.QProductEntity
-import com.trading.tcg.adapter.out.persistence.product.entity.QProductSellBidEntity
+import com.trading.tcg.adapter.out.persistence.product.entity.*
 import com.trading.tcg.adapter.out.persistence.user.entity.QUserProductBookmarkEntity
 import com.trading.tcg.adapter.out.persistence.yugioh.entity.QYugiohCardEntity
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
+import com.trading.tcg.application.product.dto.response.ProductCatalogDto
 import com.trading.tcg.application.product.dto.response.ProductDto
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
 import com.trading.tcg.global.dto.Pageable
@@ -46,10 +46,12 @@ class ProductPersistenceAdapter(
                 orderBuilder.add(OrderSpecifier(sort, qBuyBid.createdTime))
                 orderBuilder.add(OrderSpecifier(sort, qSellBid.createdTime))
             }
+
             "bidClosedTime" -> {
                 orderBuilder.add(OrderSpecifier(sort, qBuyBid.closedTime))
                 orderBuilder.add(OrderSpecifier(sort, qSellBid.closedTime))
             }
+
             "bidCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
             "dealCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
             "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentPrice))
@@ -68,15 +70,17 @@ class ProductPersistenceAdapter(
                 whereBuilder.and(combineExpressions(query.type) { qPokemonCard.type.eq(it) })
                 whereBuilder.and(combineExpressions(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
             }
+
             "yugioh" -> {
                 whereBuilder.and(qYugiohCard.id.isNotNull)
                 whereBuilder.and(qYugiohCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.rank) { qYugiohCard.gradeType.eq(it) })
+                whereBuilder.and(combineExpressions(query.summonType) { qYugiohCard.summonType.eq(it) })
                 whereBuilder.and(combineExpressions(query.species) { qYugiohCard.species.eq(it) })
                 whereBuilder.and(combineExpressions(query.type) { qYugiohCard.type.eq(it) })
                 whereBuilder.and(combineExpressions(query.effect) { qYugiohCard.effect.eq(it) })
                 whereBuilder.and(combineExpressions(query.attribute) { qYugiohCard.attributes.any().attribute.name.eq(it) })
             }
+
             "digimon" -> {
                 whereBuilder.and(qDigimonCard.id.isNotNull)
                 whereBuilder.and(qDigimonCard.name.contains(query.search))
@@ -155,6 +159,40 @@ class ProductPersistenceAdapter(
                 size = query.size
             ),
             data = products
+        )
+    }
+
+    override fun findProductCatalog(): ProductCatalogDto {
+        val qProductCategory = QProductCategoryEntity.productCategoryEntity
+        val qProductCategoryFilter = QProductCategoryFilterEntity.productCategoryFilterEntity
+
+        return ProductCatalogDto(
+            categories = jpaQueryFactory
+                .from(qProductCategory)
+                .leftJoin(qProductCategory.filters, qProductCategoryFilter)
+                .groupBy(qProductCategory.id, qProductCategoryFilter.id)
+                .orderBy(
+                    qProductCategory.displayOrder.asc(),
+                    qProductCategoryFilter.displayOrder.asc(),
+                )
+                .transform(
+                    GroupBy.groupBy(qProductCategory.id)
+                        .list(
+                            Projections.constructor(
+                                ProductCatalogDto.ProductCategory::class.java,
+                                qProductCategory.queryName,
+                                qProductCategory.displayName,
+                                GroupBy.list(
+                                    Projections.constructor(
+                                        ProductCatalogDto.ProductFilter::class.java,
+                                        qProductCategoryFilter.queryName,
+                                        qProductCategoryFilter.displayName,
+                                        qProductCategoryFilter.option
+                                    )
+                                )
+                            )
+                        )
+                )
         )
     }
 

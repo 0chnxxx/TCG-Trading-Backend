@@ -12,6 +12,7 @@ data class FindProductsQuery(
     val attribute: List<String>,
     val form: List<String>,
     val species: List<String>,
+    val summonType: List<String>,
     val regulationMark: List<String>,
     val isExcludedNotBidProduct: Boolean,
     val search: String?,

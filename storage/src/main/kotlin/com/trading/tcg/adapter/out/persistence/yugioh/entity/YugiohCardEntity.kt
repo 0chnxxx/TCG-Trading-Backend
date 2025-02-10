@@ -40,11 +40,11 @@ class YugiohCardEntity(
     @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
     val attributes: List<YugiohCardAttributeCatalogEntity>,
 
-    @Column(name = "grade_type")
-    val gradeType: String?,
+    @Column(name = "summon_type")
+    val summonType: String?,
 
-    @Column(name = "grade")
-    val grade: Int?,
+    @Column(name = "summon_value")
+    val summonValue: Int?,
 
     @Column(name = "marker")
     val marker: String?,
@@ -111,8 +111,8 @@ class YugiohCardEntity(
                 effect = effect,
                 species = species,
                 attributes = emptyList(),
-                gradeType = gradeType,
-                grade = grade,
+                summonType = summonType,
+                summonValue = summonValue,
                 marker = marker,
                 attack = attack,
                 defence = defence,

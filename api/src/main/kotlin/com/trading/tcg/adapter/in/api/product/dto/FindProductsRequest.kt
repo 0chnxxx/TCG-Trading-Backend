@@ -31,6 +31,8 @@ data class FindProductsRequest(
 
     val species: List<String>?,
 
+    val summonType: List<String>?,
+
     val regulationMark: List<String>?,
 
     val isExcludedNotBidProduct: Boolean?,
@@ -60,6 +62,7 @@ data class FindProductsRequest(
             attribute = attribute ?: emptyList(),
             form = form ?: emptyList(),
             species = species ?: emptyList(),
+            summonType = summonType ?: emptyList(),
             regulationMark = regulationMark ?: emptyList(),
             isExcludedNotBidProduct = isExcludedNotBidProduct ?: false,
             search = search,

@@ -2,6 +2,7 @@ package com.trading.tcg.adapter.`in`.api.product.controller
 
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductsRequest
 import com.trading.tcg.adapter.`in`.swagger.product.ProductSwagger
+import com.trading.tcg.application.product.dto.response.ProductCatalogDto
 import com.trading.tcg.application.product.dto.response.ProductDto
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.global.dto.Provider
@@ -24,5 +25,13 @@ class ProductController(
         request: FindProductsRequest
     ): ResponseEntity<Response<List<ProductDto>>> {
         return ResponseEntity(productUseCase.findProducts(request.toQuery(provider)), HttpStatus.OK)
+    }
+
+    @GetMapping("/products/catalog")
+    override fun findProductCatalog(
+        @AuthenticationPrincipal
+        provider: Provider
+    ): ResponseEntity<Response<ProductCatalogDto>> {
+        return ResponseEntity(productUseCase.findProductCatalog(), HttpStatus.OK)
     }
 }
