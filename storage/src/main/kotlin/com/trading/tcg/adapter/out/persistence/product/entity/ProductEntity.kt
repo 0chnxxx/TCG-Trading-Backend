@@ -15,8 +15,8 @@ abstract class ProductEntity(
     @Column(name = "id")
     val id: Long? = null,
 
-    @Column(name = "recent_price", precision = 10, scale = 2)
-    val recentPrice: BigDecimal?,
+    @Column(name = "recent_deal_price", precision = 10, scale = 2)
+    val recentDealPrice: BigDecimal?,
 
     @Column(name = "deal_count", nullable = false)
     val dealCount: Int,

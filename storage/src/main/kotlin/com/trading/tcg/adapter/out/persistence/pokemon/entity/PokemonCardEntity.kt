@@ -28,8 +28,8 @@ class PokemonCardEntity(
     @Column(name = "image", nullable = false)
     val image: String,
 
-    @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
-    val categories: List<PokemonCardCategoryCatalogEntity>,
+    @Column(name = "categories", nullable = false)
+    val categories: String,
 
     @Column(name = "type", nullable = false)
     val type: String?,
@@ -70,7 +70,7 @@ class PokemonCardEntity(
     @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
     val skills: List<PokemonCardSkillEntity>,
 
-    recentPrice: BigDecimal?,
+    recentDealPrice: BigDecimal?,
 
     dealCount: Int,
 
@@ -93,7 +93,7 @@ class PokemonCardEntity(
     bookmarks: List<UserProductBookmarkEntity>
 ): ProductEntity(
     id = id,
-    recentPrice = recentPrice,
+    recentDealPrice = recentDealPrice,
     dealCount = dealCount,
     deals = deals,
     directBuyPrice = directBuyPrice,
@@ -128,7 +128,7 @@ class PokemonCardEntity(
                 retreatValue = retreatValue,
                 skills = emptyList()
             ),
-            recentPrice = recentPrice,
+            recentDealPrice = recentDealPrice,
             directBuyPrice = directBuyPrice,
             directSellPrice = directSellPrice,
             dealCount = dealCount,

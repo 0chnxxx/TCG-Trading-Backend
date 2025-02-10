@@ -28,6 +28,9 @@ class YugiohCardEntity(
     @Column(name = "image", nullable = false)
     val image: String,
 
+    @Column(name = "categories", nullable = false)
+    val categories: String,
+
     @Column(name = "type", nullable = false)
     val type: String,
 
@@ -36,9 +39,6 @@ class YugiohCardEntity(
 
     @Column(name = "species")
     val species: String?,
-
-    @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
-    val attributes: List<YugiohCardAttributeCatalogEntity>,
 
     @Column(name = "summon_type")
     val summonType: String?,
@@ -64,7 +64,7 @@ class YugiohCardEntity(
     @Column(name = "description")
     val description: String?,
 
-    recentPrice: BigDecimal?,
+    recentDealPrice: BigDecimal?,
 
     dealCount: Int,
 
@@ -87,7 +87,7 @@ class YugiohCardEntity(
     bookmarks: List<UserProductBookmarkEntity>
 ): ProductEntity(
     id = id,
-    recentPrice = recentPrice,
+    recentDealPrice = recentDealPrice,
     dealCount = dealCount,
     deals = deals,
     directBuyPrice = directBuyPrice,
@@ -107,10 +107,10 @@ class YugiohCardEntity(
                 code = code,
                 name = name,
                 image = image,
+                categories = categories.split("\n"),
                 type = type,
                 effect = effect,
                 species = species,
-                attributes = emptyList(),
                 summonType = summonType,
                 summonValue = summonValue,
                 marker = marker,
@@ -120,7 +120,7 @@ class YugiohCardEntity(
                 pendulumDescription = pendulumDescription,
                 description = description
             ),
-            recentPrice = recentPrice,
+            recentDealPrice = recentDealPrice,
             directBuyPrice = directBuyPrice,
             directSellPrice = directSellPrice,
             dealCount = dealCount,

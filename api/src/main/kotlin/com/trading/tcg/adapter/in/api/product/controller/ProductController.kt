@@ -1,9 +1,11 @@
 package com.trading.tcg.adapter.`in`.api.product.controller
 
+import com.trading.tcg.adapter.`in`.api.product.dto.FindProductRequest
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductsRequest
 import com.trading.tcg.adapter.`in`.swagger.product.ProductSwagger
 import com.trading.tcg.application.product.dto.response.ProductCatalogDto
 import com.trading.tcg.application.product.dto.response.ProductCountDto
+import com.trading.tcg.application.product.dto.response.ProductDetailDto
 import com.trading.tcg.application.product.dto.response.ProductDto
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.global.dto.Provider
@@ -19,6 +21,14 @@ import org.springframework.web.bind.annotation.RestController
 class ProductController(
     private val productUseCase: ProductUseCase
 ): ProductSwagger {
+    @GetMapping("/products/catalog")
+    override fun findProductCatalog(
+        @AuthenticationPrincipal
+        provider: Provider
+    ): ResponseEntity<Response<ProductCatalogDto>> {
+        return ResponseEntity(productUseCase.findProductCatalog(), HttpStatus.OK)
+    }
+
     @GetMapping("/products")
     override fun findProducts(
         @AuthenticationPrincipal
@@ -28,19 +38,19 @@ class ProductController(
         return ResponseEntity(productUseCase.findProducts(request.toQuery(provider)), HttpStatus.OK)
     }
 
-    @GetMapping("/products/catalog")
-    override fun findProductCatalog(
-        @AuthenticationPrincipal
-        provider: Provider
-    ): ResponseEntity<Response<ProductCatalogDto>> {
-        return ResponseEntity(productUseCase.findProductCatalog(), HttpStatus.OK)
-    }
-
     @GetMapping("/products/count")
     override fun findProductCount(
         provider: Provider,
         request: FindProductsRequest
     ): ResponseEntity<Response<ProductCountDto>> {
         return ResponseEntity(productUseCase.findProductCount(request.toQuery(provider)), HttpStatus.OK)
+    }
+
+    @GetMapping("/products/{productId}")
+    override fun findProduct(
+        provider: Provider,
+        request: FindProductRequest
+    ): ResponseEntity<Response<ProductDetailDto>> {
+        return ResponseEntity(productUseCase.findProduct(request.toQuery(provider)), HttpStatus.OK)
     }
 }

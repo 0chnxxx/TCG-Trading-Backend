@@ -19,9 +19,9 @@ data class ProductCatalogDto(
             displayName: String,
             options: String
         ): this(
-            queryName,
-            displayName,
-            options.split("\n")
+            queryName = queryName,
+            displayName = displayName,
+            options = options.split("\n")
         )
     }
 }

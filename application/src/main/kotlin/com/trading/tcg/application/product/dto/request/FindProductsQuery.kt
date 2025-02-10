@@ -9,7 +9,6 @@ data class FindProductsQuery(
     val category: List<String>,
     val type: List<String>,
     val effect: List<String>,
-    val attribute: List<String>,
     val form: List<String>,
     val species: List<String>,
     val summonType: List<String>,

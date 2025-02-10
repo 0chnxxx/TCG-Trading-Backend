@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 class Product(
     val id: Long?,
     val card: Card,
-    val recentPrice: BigDecimal?,
+    val recentDealPrice: BigDecimal?,
     val directBuyPrice: BigDecimal?,
     val directSellPrice: BigDecimal?,
     val dealCount: Int,

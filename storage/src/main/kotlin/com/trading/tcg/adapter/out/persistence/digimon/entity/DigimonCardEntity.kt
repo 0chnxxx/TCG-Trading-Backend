@@ -35,8 +35,8 @@ class DigimonCardEntity(
     @Column(name = "category", nullable = false)
     val category: String,
 
-    @OneToMany(mappedBy = "card", fetch = FetchType.LAZY)
-    val types: List<DigimonCardTypeCatalogEntity>,
+    @Column(name = "types", nullable = false)
+    val types: String,
 
     @Column(name = "form")
     val form: String?,
@@ -65,7 +65,7 @@ class DigimonCardEntity(
     @Column(name = "bottom_description")
     val bottomDescription: String?,
 
-    recentPrice: BigDecimal?,
+    recentDealPrice: BigDecimal?,
 
     dealCount: Int,
 
@@ -88,7 +88,7 @@ class DigimonCardEntity(
     bookmarks: List<UserProductBookmarkEntity>
 ): ProductEntity(
     id = id,
-    recentPrice = recentPrice,
+    recentDealPrice = recentDealPrice,
     dealCount = dealCount,
     deals = deals,
     directBuyPrice = directBuyPrice,
@@ -110,9 +110,9 @@ class DigimonCardEntity(
                 image = image,
                 rank = rank,
                 category = category,
+                types = types.split("\n"),
                 form = form,
                 species = species,
-                types = emptyList(),
                 level = level,
                 dp = dp,
                 appearanceCost = appearanceCost,
@@ -121,7 +121,7 @@ class DigimonCardEntity(
                 topDescription = topDescription,
                 bottomDescription = bottomDescription
             ),
-            recentPrice = recentPrice,
+            recentDealPrice = recentDealPrice,
             directBuyPrice = directBuyPrice,
             directSellPrice = directSellPrice,
             dealCount = dealCount,

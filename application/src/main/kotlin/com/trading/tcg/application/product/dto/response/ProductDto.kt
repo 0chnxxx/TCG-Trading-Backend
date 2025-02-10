@@ -7,7 +7,7 @@ data class ProductDto(
     val id: Long?,
     val name: String,
     val image: String,
-    val recentPrice: String,
+    val recentDealPrice: String,
     val directBuyPrice: String,
     val directSellPrice: String,
     val dealCount: Int,
@@ -21,7 +21,7 @@ data class ProductDto(
         id: Long?,
         name: String,
         image: String,
-        recentPrice: BigDecimal?,
+        recentDealPrice: BigDecimal?,
         directBuyPrice: BigDecimal?,
         directSellPrice: BigDecimal?,
         dealCount: Int,
@@ -32,17 +32,17 @@ data class ProductDto(
         createdTime: LocalDateTime,
         updatedTime: LocalDateTime?
     ): this(
-        id,
-        name,
-        image,
-        recentPrice?.toPlainString() ?: "-",
-        directBuyPrice?.toPlainString() ?: "-",
-        directSellPrice?.toPlainString() ?: "-",
-        dealCount,
-        buyBidCount + sellBidCount,
-        bookmarkCount,
-        isBookmarked,
-        createdTime,
-        updatedTime
+        id = id,
+        name = name,
+        image = image,
+        recentDealPrice = recentDealPrice?.toPlainString() ?: "-",
+        directBuyPrice = directBuyPrice?.toPlainString() ?: "-",
+        directSellPrice = directSellPrice?.toPlainString() ?: "-",
+        dealCount = dealCount,
+        bidCount = buyBidCount + sellBidCount,
+        bookmarkCount = bookmarkCount,
+        isBookmarked = isBookmarked,
+        createdTime = createdTime,
+        updatedTime = updatedTime
     )
 }

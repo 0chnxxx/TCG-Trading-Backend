@@ -25,8 +25,6 @@ data class FindProductsRequest(
 
     val effect: List<String>?,
 
-    val attribute: List<String>?,
-
     val form: List<String>?,
 
     val species: List<String>?,
@@ -57,7 +55,6 @@ data class FindProductsRequest(
             category = category ?: emptyList(),
             type = type ?: emptyList(),
             effect = effect ?: emptyList(),
-            attribute = attribute ?: emptyList(),
             form = form ?: emptyList(),
             species = species ?: emptyList(),
             summonType = summonType ?: emptyList(),
