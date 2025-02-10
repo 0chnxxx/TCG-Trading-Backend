@@ -13,6 +13,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import com.trading.tcg.adapter.out.persistence.card.entity.*
 import com.trading.tcg.adapter.out.persistence.product.entity.*
 import com.trading.tcg.adapter.out.persistence.user.entity.QUserProductBookmarkEntity
+import com.trading.tcg.application.product.domain.ProductBidStatus
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
 import com.trading.tcg.application.product.dto.response.ProductCatalogDto
@@ -168,7 +169,29 @@ class ProductPersistenceAdapter(
         val qYugiohCardPackCatalog = QYugiohCardPackCatalogEntity.yugiohCardPackCatalogEntity
         val qDigimonCard = QDigimonCardEntity.digimonCardEntity
         val qDigimonCardPack = QDigimonCardPackEntity.digimonCardPackEntity
+        val qProductBuyBid = QProductBuyBidEntity.productBuyBidEntity
+        val qProductSellBid = QProductSellBidEntity.productSellBidEntity
         val qBookmark = QUserProductBookmarkEntity.userProductBookmarkEntity
+
+        val maxBuySubQuery = JPAExpressions
+            .select(qProductBuyBid.id)
+            .from(qProductBuyBid)
+            .where(
+                qProductBuyBid.product.id.eq(qProduct.id)
+                    .and(qProductBuyBid.status.eq(ProductBidStatus.BIDDING))
+            )
+            .orderBy(qProductBuyBid.price.desc())
+            .limit(1)
+
+        val minSellSubQuery = JPAExpressions
+            .select(qProductSellBid.id)
+            .from(qProductSellBid)
+            .where(
+                qProductSellBid.product.id.eq(qProduct.id)
+                    .and(qProductSellBid.status.eq(ProductBidStatus.BIDDING))
+            )
+            .orderBy(qProductSellBid.price.asc())
+            .limit(1)
 
         return jpaQueryFactory
             .from(qProduct)
@@ -180,6 +203,8 @@ class ProductPersistenceAdapter(
             .leftJoin(qYugiohCardPack).on(qYugiohCardPack.id.eq(qYugiohCardPackCatalog.pack.id))
             .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
             .leftJoin(qDigimonCardPack).on(qDigimonCardPack.id.eq(qDigimonCard.pack.id))
+            .leftJoin(qProductBuyBid).on(qProductBuyBid.id.eq(maxBuySubQuery))
+            .leftJoin(qProductSellBid).on(qProductSellBid.id.eq(minSellSubQuery))
             .where(qProduct.id.eq(query.productId))
             .transform(GroupBy.groupBy(qProduct.id).list(
                 Projections.constructor(
@@ -227,6 +252,10 @@ class ProductPersistenceAdapter(
                         .`when`(qDigimonCard.id.isNotNull).then(qDigimonCard.form)
                         .`when`(qPokemonCard.id.isNotNull).then(Expressions.nullExpression())
                         .otherwise(Expressions.nullExpression()),
+                    qProductBuyBid.price,
+                    qProductBuyBid.quantity,
+                    qProductSellBid.price,
+                    qProductSellBid.quantity,
                     qProduct.id.`in`(
                         ExpressionUtils.list(
                             Long::class.java,
