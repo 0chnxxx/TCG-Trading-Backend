@@ -2,6 +2,7 @@ package com.trading.tcg.application.product.service
 
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
 import com.trading.tcg.application.product.dto.response.ProductCatalogDto
+import com.trading.tcg.application.product.dto.response.ProductCountDto
 import com.trading.tcg.application.product.dto.response.ProductDto
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
@@ -31,6 +32,17 @@ class ProductService(
 
         return Response.of(
             data = productCatalog
+        )
+    }
+
+    @Transactional(readOnly = true)
+    override fun findProductCount(query: FindProductsQuery): Response<ProductCountDto> {
+        val count = productPersistencePort.countProducts(query)
+
+        return Response.of(
+            data = ProductCountDto(
+                count = count
+            )
         )
     }
 }

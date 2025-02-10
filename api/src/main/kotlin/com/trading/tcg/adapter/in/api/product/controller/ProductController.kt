@@ -3,6 +3,7 @@ package com.trading.tcg.adapter.`in`.api.product.controller
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductsRequest
 import com.trading.tcg.adapter.`in`.swagger.product.ProductSwagger
 import com.trading.tcg.application.product.dto.response.ProductCatalogDto
+import com.trading.tcg.application.product.dto.response.ProductCountDto
 import com.trading.tcg.application.product.dto.response.ProductDto
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.global.dto.Provider
@@ -33,5 +34,13 @@ class ProductController(
         provider: Provider
     ): ResponseEntity<Response<ProductCatalogDto>> {
         return ResponseEntity(productUseCase.findProductCatalog(), HttpStatus.OK)
+    }
+
+    @GetMapping("/products/count")
+    override fun findProductCount(
+        provider: Provider,
+        request: FindProductsRequest
+    ): ResponseEntity<Response<ProductCountDto>> {
+        return ResponseEntity(productUseCase.findProductCount(request.toQuery(provider)), HttpStatus.OK)
     }
 }

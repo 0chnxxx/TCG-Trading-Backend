@@ -38,71 +38,10 @@ class ProductPersistenceAdapter(
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
 
-        val sort = Order.valueOf(query.sort.uppercase())
+        orderProducts(orderBuilder, query, qProduct, qBuyBid, qSellBid)
+        filterProducts(whereBuilder, query, qProduct, qPokemonCard, qYugiohCard, qDigimonCard)
 
-        when (query.order) {
-            "id" -> orderBuilder.add(OrderSpecifier(sort, qProduct.id))
-            "bidPlacedTime" -> {
-                orderBuilder.add(OrderSpecifier(sort, qBuyBid.createdTime))
-                orderBuilder.add(OrderSpecifier(sort, qSellBid.createdTime))
-            }
-
-            "bidClosedTime" -> {
-                orderBuilder.add(OrderSpecifier(sort, qBuyBid.closedTime))
-                orderBuilder.add(OrderSpecifier(sort, qSellBid.closedTime))
-            }
-
-            "bidCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
-            "dealCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
-            "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentPrice))
-        }
-
-        if (query.isExcludedNotBidProduct) {
-            whereBuilder.and(qProduct.buyBids.isNotEmpty.or(qProduct.sellBids.isNotEmpty))
-        }
-
-        when (query.tab) {
-            "pokemon" -> {
-                whereBuilder.and(qPokemonCard.id.isNotNull)
-                whereBuilder.and(qPokemonCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.rank) { qPokemonCard.rank.eq(it) })
-                whereBuilder.and(combineExpressions(query.category) { qPokemonCard.categories.any().category.name.eq(it) })
-                whereBuilder.and(combineExpressions(query.type) { qPokemonCard.type.eq(it) })
-                whereBuilder.and(combineExpressions(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
-            }
-
-            "yugioh" -> {
-                whereBuilder.and(qYugiohCard.id.isNotNull)
-                whereBuilder.and(qYugiohCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.summonType) { qYugiohCard.summonType.eq(it) })
-                whereBuilder.and(combineExpressions(query.species) { qYugiohCard.species.eq(it) })
-                whereBuilder.and(combineExpressions(query.type) { qYugiohCard.type.eq(it) })
-                whereBuilder.and(combineExpressions(query.effect) { qYugiohCard.effect.eq(it) })
-                whereBuilder.and(combineExpressions(query.attribute) { qYugiohCard.attributes.any().attribute.name.eq(it) })
-            }
-
-            "digimon" -> {
-                whereBuilder.and(qDigimonCard.id.isNotNull)
-                whereBuilder.and(qDigimonCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.rank) { qDigimonCard.rank.eq(it) })
-                whereBuilder.and(combineExpressions(query.category) { qDigimonCard.category.eq(it) })
-                whereBuilder.and(combineExpressions(query.type) { qDigimonCard.types.any().type.name.eq(it) })
-                whereBuilder.and(combineExpressions(query.form) { qDigimonCard.form.eq(it) })
-                whereBuilder.and(combineExpressions(query.species) { qDigimonCard.species.eq(it) })
-            }
-        }
-
-        val totalCount = jpaQueryFactory
-            .select(qProduct.id.count())
-            .from(qProduct)
-            .leftJoin(qPokemonCard).on(qPokemonCard.id.eq(qProduct.id))
-            .leftJoin(qYugiohCard).on(qYugiohCard.id.eq(qProduct.id))
-            .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
-            .leftJoin(qBuyBid).on(qBuyBid.product.id.eq(qProduct.id))
-            .leftJoin(qSellBid).on(qSellBid.product.id.eq(qProduct.id))
-            .leftJoin(qBookmark).on(qBookmark.product.id.eq(qProduct.id))
-            .where(whereBuilder.value)
-            .fetchOne()
+        val totalCount = countProducts(query)
 
         val products = jpaQueryFactory
             .select(
@@ -154,7 +93,7 @@ class ProductPersistenceAdapter(
 
         return Pageable(
             pageResult = Pageable.PageResult.of(
-                totalCount = totalCount ?: 0,
+                totalCount = totalCount,
                 page = query.page,
                 size = query.size
             ),
@@ -194,6 +133,103 @@ class ProductPersistenceAdapter(
                         )
                 )
         )
+    }
+
+    override fun countProducts(query: FindProductsQuery): Long {
+        val qProduct = QProductEntity.productEntity
+        val qPokemonCard = QPokemonCardEntity.pokemonCardEntity
+        val qYugiohCard = QYugiohCardEntity.yugiohCardEntity
+        val qDigimonCard = QDigimonCardEntity.digimonCardEntity
+        val qBuyBid = QProductBuyBidEntity.productBuyBidEntity
+        val qSellBid = QProductSellBidEntity.productSellBidEntity
+        val qBookmark = QUserProductBookmarkEntity.userProductBookmarkEntity
+
+        val whereBuilder = BooleanBuilder()
+
+        filterProducts(whereBuilder, query, qProduct, qPokemonCard, qYugiohCard, qDigimonCard)
+
+        return jpaQueryFactory
+            .select(qProduct.id.count())
+            .from(qProduct)
+            .leftJoin(qPokemonCard).on(qPokemonCard.id.eq(qProduct.id))
+            .leftJoin(qYugiohCard).on(qYugiohCard.id.eq(qProduct.id))
+            .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
+            .leftJoin(qBuyBid).on(qBuyBid.product.id.eq(qProduct.id))
+            .leftJoin(qSellBid).on(qSellBid.product.id.eq(qProduct.id))
+            .leftJoin(qBookmark).on(qBookmark.product.id.eq(qProduct.id))
+            .where(whereBuilder.value)
+            .fetchOne() ?: 0
+    }
+
+    private fun orderProducts(
+        orderBuilder: MutableList<OrderSpecifier<*>>,
+        query: FindProductsQuery,
+        qProduct: QProductEntity,
+        qBuyBid: QProductBuyBidEntity,
+        qSellBid: QProductSellBidEntity
+    ) {
+        val sort = Order.valueOf(query.sort.uppercase())
+
+        when (query.order) {
+            "id" -> orderBuilder.add(OrderSpecifier(sort, qProduct.id))
+            "bidPlacedTime" -> {
+                orderBuilder.add(OrderSpecifier(sort, qBuyBid.createdTime))
+                orderBuilder.add(OrderSpecifier(sort, qSellBid.createdTime))
+            }
+
+            "bidClosedTime" -> {
+                orderBuilder.add(OrderSpecifier(sort, qBuyBid.closedTime))
+                orderBuilder.add(OrderSpecifier(sort, qSellBid.closedTime))
+            }
+
+            "bidCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
+            "dealCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
+            "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentPrice))
+        }
+    }
+
+    private fun filterProducts(
+        whereBuilder: BooleanBuilder,
+        query: FindProductsQuery,
+        qProduct: QProductEntity,
+        qPokemonCard: QPokemonCardEntity,
+        qYugiohCard: QYugiohCardEntity,
+        qDigimonCard: QDigimonCardEntity
+    ) {
+        if (query.isExcludedNotBidProduct) {
+            whereBuilder.and(qProduct.buyBids.isNotEmpty.or(qProduct.sellBids.isNotEmpty))
+        }
+
+        when (query.tab) {
+            "pokemon" -> {
+                whereBuilder.and(qPokemonCard.id.isNotNull)
+                whereBuilder.and(qPokemonCard.name.contains(query.search))
+                whereBuilder.and(combineExpressions(query.rank) { qPokemonCard.rank.eq(it) })
+                whereBuilder.and(combineExpressions(query.category) { qPokemonCard.categories.any().category.name.eq(it) })
+                whereBuilder.and(combineExpressions(query.type) { qPokemonCard.type.eq(it) })
+                whereBuilder.and(combineExpressions(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
+            }
+
+            "yugioh" -> {
+                whereBuilder.and(qYugiohCard.id.isNotNull)
+                whereBuilder.and(qYugiohCard.name.contains(query.search))
+                whereBuilder.and(combineExpressions(query.summonType) { qYugiohCard.summonType.eq(it) })
+                whereBuilder.and(combineExpressions(query.species) { qYugiohCard.species.eq(it) })
+                whereBuilder.and(combineExpressions(query.type) { qYugiohCard.type.eq(it) })
+                whereBuilder.and(combineExpressions(query.effect) { qYugiohCard.effect.eq(it) })
+                whereBuilder.and(combineExpressions(query.attribute) { qYugiohCard.attributes.any().attribute.name.eq(it) })
+            }
+
+            "digimon" -> {
+                whereBuilder.and(qDigimonCard.id.isNotNull)
+                whereBuilder.and(qDigimonCard.name.contains(query.search))
+                whereBuilder.and(combineExpressions(query.rank) { qDigimonCard.rank.eq(it) })
+                whereBuilder.and(combineExpressions(query.category) { qDigimonCard.category.eq(it) })
+                whereBuilder.and(combineExpressions(query.type) { qDigimonCard.types.any().type.name.eq(it) })
+                whereBuilder.and(combineExpressions(query.form) { qDigimonCard.form.eq(it) })
+                whereBuilder.and(combineExpressions(query.species) { qDigimonCard.species.eq(it) })
+            }
+        }
     }
 
     private fun <T> combineExpressions(
