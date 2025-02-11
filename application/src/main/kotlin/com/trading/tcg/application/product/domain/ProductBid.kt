@@ -8,9 +8,11 @@ class ProductBid(
     val id: Long?,
     val product: Product,
     val user: User,
+    val type: ProductBidType,
     val status: ProductBidStatus,
     val price: BigDecimal,
-    val quantity: Int,
+    val totalQuantity: Int,
+    val remainingQuantity: Int,
     val closedTime: LocalDateTime,
     val createdTime: LocalDateTime,
     val updatedTime: LocalDateTime

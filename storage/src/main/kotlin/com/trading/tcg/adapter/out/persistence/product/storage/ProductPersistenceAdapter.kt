@@ -14,6 +14,7 @@ import com.trading.tcg.adapter.out.persistence.card.entity.*
 import com.trading.tcg.adapter.out.persistence.product.entity.*
 import com.trading.tcg.adapter.out.persistence.user.entity.QUserProductBookmarkEntity
 import com.trading.tcg.application.product.domain.ProductBidStatus
+import com.trading.tcg.application.product.domain.ProductBidType
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
 import com.trading.tcg.application.product.dto.response.ProductCatalogDto
@@ -66,14 +67,13 @@ class ProductPersistenceAdapter(
         val qPokemonCard = QPokemonCardEntity.pokemonCardEntity
         val qYugiohCard = QYugiohCardEntity.yugiohCardEntity
         val qDigimonCard = QDigimonCardEntity.digimonCardEntity
-        val qBuyBid = QProductBuyBidEntity.productBuyBidEntity
-        val qSellBid = QProductSellBidEntity.productSellBidEntity
+        val qProductBid = QProductBidEntity.productBidEntity
         val qBookmark = QUserProductBookmarkEntity.userProductBookmarkEntity
 
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
 
-        orderProducts(orderBuilder, query, qProduct, qBuyBid, qSellBid)
+        orderProducts(orderBuilder, query, qProduct, qProductBid)
         filterProducts(whereBuilder, query, qProduct, qPokemonCard, qYugiohCard, qDigimonCard)
 
         val totalCount = countProducts(query)
@@ -117,8 +117,7 @@ class ProductPersistenceAdapter(
             .leftJoin(qPokemonCard).on(qPokemonCard.id.eq(qProduct.id))
             .leftJoin(qYugiohCard).on(qYugiohCard.id.eq(qProduct.id))
             .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
-            .leftJoin(qBuyBid).on(qBuyBid.product.id.eq(qProduct.id))
-            .leftJoin(qSellBid).on(qSellBid.product.id.eq(qProduct.id))
+            .leftJoin(qProductBid).on(qProductBid.product.id.eq(qProduct.id))
             .where(whereBuilder.value)
             .orderBy(*orderBuilder.toTypedArray())
             .offset(((query.page - 1) * query.size).toLong())
@@ -140,8 +139,7 @@ class ProductPersistenceAdapter(
         val qPokemonCard = QPokemonCardEntity.pokemonCardEntity
         val qYugiohCard = QYugiohCardEntity.yugiohCardEntity
         val qDigimonCard = QDigimonCardEntity.digimonCardEntity
-        val qBuyBid = QProductBuyBidEntity.productBuyBidEntity
-        val qSellBid = QProductSellBidEntity.productSellBidEntity
+        val qProductBid = QProductBidEntity.productBidEntity
 
         val whereBuilder = BooleanBuilder()
 
@@ -153,8 +151,7 @@ class ProductPersistenceAdapter(
             .leftJoin(qPokemonCard).on(qPokemonCard.id.eq(qProduct.id))
             .leftJoin(qYugiohCard).on(qYugiohCard.id.eq(qProduct.id))
             .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
-            .leftJoin(qBuyBid).on(qBuyBid.product.id.eq(qProduct.id))
-            .leftJoin(qSellBid).on(qSellBid.product.id.eq(qProduct.id))
+            .leftJoin(qProductBid).on(qProductBid.product.id.eq(qProduct.id))
             .where(whereBuilder.value)
             .fetchOne() ?: 0
     }
@@ -169,8 +166,8 @@ class ProductPersistenceAdapter(
         val qYugiohCardPackCatalog = QYugiohCardPackCatalogEntity.yugiohCardPackCatalogEntity
         val qDigimonCard = QDigimonCardEntity.digimonCardEntity
         val qDigimonCardPack = QDigimonCardPackEntity.digimonCardPackEntity
-        val qProductBuyBid = QProductBuyBidEntity.productBuyBidEntity
-        val qProductSellBid = QProductSellBidEntity.productSellBidEntity
+        val qProductBuyBid = QProductBidEntity("qProductBuyBid")
+        val qProductSellBid = QProductBidEntity("qProductSellBid")
         val qBookmark = QUserProductBookmarkEntity.userProductBookmarkEntity
 
         val maxBuySubQuery = JPAExpressions
@@ -178,6 +175,7 @@ class ProductPersistenceAdapter(
             .from(qProductBuyBid)
             .where(
                 qProductBuyBid.product.id.eq(qProduct.id)
+                    .and(qProductBuyBid.type.eq(ProductBidType.BUY))
                     .and(qProductBuyBid.status.eq(ProductBidStatus.BIDDING))
             )
             .orderBy(qProductBuyBid.price.desc())
@@ -188,6 +186,7 @@ class ProductPersistenceAdapter(
             .from(qProductSellBid)
             .where(
                 qProductSellBid.product.id.eq(qProduct.id)
+                    .and(qProductSellBid.type.eq(ProductBidType.SELL))
                     .and(qProductSellBid.status.eq(ProductBidStatus.BIDDING))
             )
             .orderBy(qProductSellBid.price.asc())
@@ -253,9 +252,9 @@ class ProductPersistenceAdapter(
                         .`when`(qPokemonCard.id.isNotNull).then(Expressions.nullExpression())
                         .otherwise(Expressions.nullExpression()),
                     qProductBuyBid.price,
-                    qProductBuyBid.quantity,
+                    qProductBuyBid.remainingQuantity,
                     qProductSellBid.price,
-                    qProductSellBid.quantity,
+                    qProductSellBid.remainingQuantity,
                     qProduct.id.`in`(
                         ExpressionUtils.list(
                             Long::class.java,
@@ -275,23 +274,14 @@ class ProductPersistenceAdapter(
         orderBuilder: MutableList<OrderSpecifier<*>>,
         query: FindProductsQuery,
         qProduct: QProductEntity,
-        qBuyBid: QProductBuyBidEntity,
-        qSellBid: QProductSellBidEntity
+        qProductBid: QProductBidEntity
     ) {
         val sort = Order.valueOf(query.sort.uppercase())
 
         when (query.order) {
             "id" -> orderBuilder.add(OrderSpecifier(sort, qProduct.id))
-            "bidPlacedTime" -> {
-                orderBuilder.add(OrderSpecifier(sort, qBuyBid.createdTime))
-                orderBuilder.add(OrderSpecifier(sort, qSellBid.createdTime))
-            }
-
-            "bidClosedTime" -> {
-                orderBuilder.add(OrderSpecifier(sort, qBuyBid.closedTime))
-                orderBuilder.add(OrderSpecifier(sort, qSellBid.closedTime))
-            }
-
+            "bidPlacedTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.createdTime))
+            "bidClosedTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.closedTime))
             "bidCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
             "dealCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
             "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
@@ -307,7 +297,7 @@ class ProductPersistenceAdapter(
         qDigimonCard: QDigimonCardEntity
     ) {
         if (query.isExcludedNotBidProduct) {
-            whereBuilder.and(qProduct.buyBids.isNotEmpty.or(qProduct.sellBids.isNotEmpty))
+            whereBuilder.and(qProduct.bids.isNotEmpty)
         }
 
         when (query.tab) {

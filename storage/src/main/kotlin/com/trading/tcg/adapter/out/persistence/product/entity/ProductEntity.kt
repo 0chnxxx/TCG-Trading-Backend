@@ -30,9 +30,6 @@ abstract class ProductEntity(
     @Column(name = "buy_bid_count", nullable = false)
     val buyBidCount: Int,
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    val buyBids: List<ProductBuyBidEntity>,
-
     @Column(name = "direct_sell_price", precision = 10, scale = 2)
     val directSellPrice: BigDecimal?,
 
@@ -40,7 +37,7 @@ abstract class ProductEntity(
     val sellBidCount: Int,
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    val sellBids: List<ProductSellBidEntity>,
+    val bids: List<ProductBidEntity>,
 
     @Column(name = "bookmark_count", nullable = false)
     val bookmarkCount: Int,
