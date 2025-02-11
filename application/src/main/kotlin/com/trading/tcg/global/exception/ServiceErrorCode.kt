@@ -13,6 +13,9 @@ enum class ServiceErrorCode(
     BLANK_REQUEST_PARAMETER(400, "필수 파라미터가 입력되지 않았습니다."),
     INVALID_ORDER(400, "유효한 정렬 대상이 아닙니다."),
     INVALID_SORT(400, "유효한 정렬 방식이 아닙니다."),
+    INVALID_TYPE(400, "유효한 타입이 아닙니다."),
+    INVALID_STATUS(400, "유효한 상태가 아닙니다."),
+    INVALID_TAB(400, "유효한 탭이 아닙니다."),
     OUT_OF_PAGE(400, "페이지 번호가 범위를 벗어났습니다."),
     OUT_OF_SIZE(400, "페이지 크기가 범위를 벗어났습니다."),
 
@@ -34,7 +37,9 @@ enum class ServiceErrorCode(
     NOT_MATCH_USER(400, "아이디 혹은 비밀번호가 일치하지 않습니다."),
 
     // 상품
-    NOT_FOUND_PRODUCT(404, "상품이 존재하지 않습니다.");
+    NOT_FOUND_PRODUCT(404, "상품이 존재하지 않습니다."),
+    INVALID_PRODUCT_BID_TYPE(400, "유효한 상품 입찰 타입이 아닙니다."),
+    INVALID_PRODUCT_BID_STATUS(400, "유효한 상품 입찰 상태가 아닙니다.");
 
     override fun getStatusCode() = statusCode
     override fun getErrorCode() = this.name

@@ -14,7 +14,7 @@ data class FindProductsRequest(
     @field:Pattern(regexp = "^(asc|desc)", message = "유효한 정렬 방식이 아닙니다.")
     val sort: String?,
 
-    @field:Pattern(regexp = "^(pokemon|yugioh|digimon)", message = "유효한 정렬 방식이 아닙니다.")
+    @field:Pattern(regexp = "^(pokemon|yugioh|digimon)", message = "유효한 탭이 아닙니다.")
     val tab: String?,
 
     val rank: List<String>?,

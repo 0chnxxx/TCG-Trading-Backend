@@ -12,11 +12,14 @@ import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.trading.tcg.adapter.out.persistence.card.entity.*
 import com.trading.tcg.adapter.out.persistence.product.entity.*
+import com.trading.tcg.adapter.out.persistence.user.entity.QUserEntity
 import com.trading.tcg.adapter.out.persistence.user.entity.QUserProductBookmarkEntity
 import com.trading.tcg.application.product.domain.ProductBidStatus
 import com.trading.tcg.application.product.domain.ProductBidType
+import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
+import com.trading.tcg.application.product.dto.response.ProductBidDto
 import com.trading.tcg.application.product.dto.response.ProductCatalogDto
 import com.trading.tcg.application.product.dto.response.ProductDetailDto
 import com.trading.tcg.application.product.dto.response.ProductDto
@@ -156,6 +159,68 @@ class ProductPersistenceAdapter(
             .fetchOne() ?: 0
     }
 
+    private fun orderProducts(
+        orderBuilder: MutableList<OrderSpecifier<*>>,
+        query: FindProductsQuery,
+        qProduct: QProductEntity,
+        qProductBid: QProductBidEntity
+    ) {
+        val sort = Order.valueOf(query.sort.uppercase())
+
+        when (query.order) {
+            "id" -> orderBuilder.add(OrderSpecifier(sort, qProduct.id))
+            "bidPlacedTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.createdTime))
+            "bidClosedTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.closedTime))
+            "bidCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
+            "dealCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
+            "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
+        }
+    }
+
+    private fun filterProducts(
+        whereBuilder: BooleanBuilder,
+        query: FindProductsQuery,
+        qProduct: QProductEntity,
+        qPokemonCard: QPokemonCardEntity,
+        qYugiohCard: QYugiohCardEntity,
+        qDigimonCard: QDigimonCardEntity
+    ) {
+        if (query.isExcludedNotBidProduct) {
+            whereBuilder.and(qProduct.bids.isNotEmpty)
+        }
+
+        when (query.tab) {
+            "pokemon" -> {
+                whereBuilder.and(qPokemonCard.id.isNotNull)
+                whereBuilder.and(qPokemonCard.name.contains(query.search))
+                whereBuilder.and(combineExpressions(query.rank) { qPokemonCard.rank.eq(it) })
+                whereBuilder.and(combineExpressions(query.category) { qPokemonCard.categories.contains(it) })
+                whereBuilder.and(combineExpressions(query.type) { qPokemonCard.type.eq(it) })
+                whereBuilder.and(combineExpressions(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
+            }
+
+            "yugioh" -> {
+                whereBuilder.and(qYugiohCard.id.isNotNull)
+                whereBuilder.and(qYugiohCard.name.contains(query.search))
+                whereBuilder.and(combineExpressions(query.category) { qYugiohCard.categories.contains(it) })
+                whereBuilder.and(combineExpressions(query.type) { qYugiohCard.type.eq(it) })
+                whereBuilder.and(combineExpressions(query.effect) { qYugiohCard.effect.eq(it) })
+                whereBuilder.and(combineExpressions(query.species) { qYugiohCard.species.eq(it) })
+                whereBuilder.and(combineExpressions(query.summonType) { qYugiohCard.summonType.eq(it) })
+            }
+
+            "digimon" -> {
+                whereBuilder.and(qDigimonCard.id.isNotNull)
+                whereBuilder.and(qDigimonCard.name.contains(query.search))
+                whereBuilder.and(combineExpressions(query.rank) { qDigimonCard.rank.eq(it) })
+                whereBuilder.and(combineExpressions(query.category) { qDigimonCard.category.eq(it) })
+                whereBuilder.and(combineExpressions(query.type) { qDigimonCard.types.contains(it) })
+                whereBuilder.and(combineExpressions(query.form) { qDigimonCard.form.eq(it) })
+                whereBuilder.and(combineExpressions(query.species) { qDigimonCard.species.eq(it) })
+            }
+        }
+    }
+
     override fun findProduct(query: FindProductQuery): ProductDetailDto? {
         val qProduct = QProductEntity.productEntity
         val qPokemonCard = QPokemonCardEntity.pokemonCardEntity
@@ -270,65 +335,97 @@ class ProductPersistenceAdapter(
             )).firstOrNull()
     }
 
-    private fun orderProducts(
+    override fun findProductBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>> {
+        val qUser = QUserEntity.userEntity
+        val qProduct = QProductEntity.productEntity
+        val qProductBid = QProductBidEntity.productBidEntity
+
+        val whereBuilder = BooleanBuilder()
+        val orderBuilder = mutableListOf<OrderSpecifier<*>>()
+
+        orderProductBids(orderBuilder, query, qProductBid)
+        filterProductBids(whereBuilder, query, qProductBid)
+
+        val totalCount = countProductBids(query)
+
+        val productBids = jpaQueryFactory
+            .select(
+                Projections.constructor(
+                    ProductBidDto::class.java,
+                    qProductBid.type,
+                    qProductBid.status,
+                    qProductBid.price,
+                    qProductBid.totalQuantity,
+                    qProductBid.remainingQuantity,
+                    qProductBid.createdTime,
+                    qProductBid.closedTime,
+                    qProductBid.user.id.eq(query.userId)
+                )
+            )
+            .from(qProductBid)
+            .join(qUser).on(qProductBid.user.id.eq(qUser.id))
+            .join(qProduct).on(qProductBid.product.id.eq(qProduct.id))
+            .where(whereBuilder.value)
+            .orderBy(*orderBuilder.toTypedArray())
+            .offset(((query.page - 1) * query.size).toLong())
+            .limit(query.size.toLong())
+            .fetch()
+
+        return Pageable(
+            pageResult = Pageable.PageResult.of(
+                totalCount = totalCount,
+                page = query.page,
+                size = query.size
+            ),
+            data = productBids
+        )
+    }
+
+    override fun countProductBids(query: FindProductBidsQuery): Long {
+        val qUser = QUserEntity.userEntity
+        val qProduct = QProductEntity.productEntity
+        val qProductBid = QProductBidEntity.productBidEntity
+
+        val whereBuilder = BooleanBuilder()
+
+        filterProductBids(whereBuilder, query, qProductBid)
+
+        return jpaQueryFactory
+            .select(qProductBid.id.count())
+            .from(qProductBid)
+            .join(qUser).on(qProductBid.user.id.eq(qUser.id))
+            .join(qProduct).on(qProductBid.product.id.eq(qProduct.id))
+            .where(whereBuilder.value)
+            .fetchOne() ?: 0
+    }
+
+    private fun orderProductBids(
         orderBuilder: MutableList<OrderSpecifier<*>>,
-        query: FindProductsQuery,
-        qProduct: QProductEntity,
+        query: FindProductBidsQuery,
         qProductBid: QProductBidEntity
     ) {
         val sort = Order.valueOf(query.sort.uppercase())
 
         when (query.order) {
-            "id" -> orderBuilder.add(OrderSpecifier(sort, qProduct.id))
-            "bidPlacedTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.createdTime))
-            "bidClosedTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.closedTime))
-            "bidCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
-            "dealCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
-            "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
+            "createdTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.createdTime))
+            "price" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.price))
+            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductBid.remainingQuantity))
         }
     }
 
-    private fun filterProducts(
+    private fun filterProductBids(
         whereBuilder: BooleanBuilder,
-        query: FindProductsQuery,
-        qProduct: QProductEntity,
-        qPokemonCard: QPokemonCardEntity,
-        qYugiohCard: QYugiohCardEntity,
-        qDigimonCard: QDigimonCardEntity
+        query: FindProductBidsQuery,
+        qProductBid: QProductBidEntity
     ) {
-        if (query.isExcludedNotBidProduct) {
-            whereBuilder.and(qProduct.bids.isNotEmpty)
+        if (query.type != null) {
+            val productBidType = ProductBidType.ofQuery(query.type!!)
+            whereBuilder.and(qProductBid.type.eq(productBidType))
         }
 
-        when (query.tab) {
-            "pokemon" -> {
-                whereBuilder.and(qPokemonCard.id.isNotNull)
-                whereBuilder.and(qPokemonCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.rank) { qPokemonCard.rank.eq(it) })
-                whereBuilder.and(combineExpressions(query.category) { qPokemonCard.categories.contains(it) })
-                whereBuilder.and(combineExpressions(query.type) { qPokemonCard.type.eq(it) })
-                whereBuilder.and(combineExpressions(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
-            }
-
-            "yugioh" -> {
-                whereBuilder.and(qYugiohCard.id.isNotNull)
-                whereBuilder.and(qYugiohCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.category) { qYugiohCard.categories.contains(it) })
-                whereBuilder.and(combineExpressions(query.type) { qYugiohCard.type.eq(it) })
-                whereBuilder.and(combineExpressions(query.effect) { qYugiohCard.effect.eq(it) })
-                whereBuilder.and(combineExpressions(query.species) { qYugiohCard.species.eq(it) })
-                whereBuilder.and(combineExpressions(query.summonType) { qYugiohCard.summonType.eq(it) })
-            }
-
-            "digimon" -> {
-                whereBuilder.and(qDigimonCard.id.isNotNull)
-                whereBuilder.and(qDigimonCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.rank) { qDigimonCard.rank.eq(it) })
-                whereBuilder.and(combineExpressions(query.category) { qDigimonCard.category.eq(it) })
-                whereBuilder.and(combineExpressions(query.type) { qDigimonCard.types.contains(it) })
-                whereBuilder.and(combineExpressions(query.form) { qDigimonCard.form.eq(it) })
-                whereBuilder.and(combineExpressions(query.species) { qDigimonCard.species.eq(it) })
-            }
+        if (query.status != null) {
+            val productBidStatus = ProductBidStatus.ofQuery(query.status!!)
+            whereBuilder.and(qProductBid.status.eq(productBidStatus))
         }
     }
 

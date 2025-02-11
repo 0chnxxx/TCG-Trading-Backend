@@ -1,11 +1,9 @@
 package com.trading.tcg.application.product.service
 
+import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
-import com.trading.tcg.application.product.dto.response.ProductCatalogDto
-import com.trading.tcg.application.product.dto.response.ProductCountDto
-import com.trading.tcg.application.product.dto.response.ProductDetailDto
-import com.trading.tcg.application.product.dto.response.ProductDto
+import com.trading.tcg.application.product.dto.response.*
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
 import com.trading.tcg.global.dto.Response
@@ -57,6 +55,15 @@ class ProductService(
 
         return Response.of(
             data = product
+        )
+    }
+
+    override fun findProductBids(query: FindProductBidsQuery): Response<List<ProductBidDto>> {
+        val productBids = productPersistencePort.findProductBids(query)
+
+        return Response.of(
+            pageResult = productBids.pageResult,
+            data = productBids.data
         )
     }
 }
