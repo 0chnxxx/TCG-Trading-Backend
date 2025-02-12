@@ -9,7 +9,6 @@ import com.trading.tcg.global.dto.Response
 interface ProductUseCase {
     fun findProductCatalog(): Response<ProductCatalogDto>
     fun findProducts(query: FindProductsQuery): Response<List<ProductDto>>
-    fun findProductCount(query: FindProductsQuery): Response<ProductCountDto>
     fun findProduct(query: FindProductQuery): Response<ProductDetailDto>
     fun findProductBids(query: FindProductBidsQuery): Response<List<ProductBidDto>>
 }

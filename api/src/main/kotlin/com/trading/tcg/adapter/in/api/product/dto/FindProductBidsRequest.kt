@@ -4,6 +4,7 @@ import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.validation.SelfValidator
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Pattern
 import org.springframework.web.bind.annotation.PathVariable
 
@@ -17,10 +18,11 @@ data class FindProductBidsRequest(
     @field:Pattern(regexp = "^(asc|desc)", message = "유효한 정렬 방식이 아닙니다.")
     val sort: String?,
 
-    @field:Pattern(regexp = "^(buy|sell)", message = "유효한 타입이 아닙니다.")
+    @field:NotNull(message = "필수 파라미터가 입력되지 않았습니다.")
+    @field:Pattern(regexp = "^(buy|sell|deal)", message = "유효한 타입이 아닙니다.")
     val type: String?,
 
-    @field:Pattern(regexp = "^(bidding|dealt|cancelled|closed)", message = "유효한 상태가 아닙니다.")
+    @field:Pattern(regexp = "^(bidding|dealt|cancelled|closed)", message = "유효한 타입이 아닙니다.")
     val status: String?,
 
     @field:Min(value = 1, message = "페이지 번호가 범위를 벗어났습니다.")
@@ -37,7 +39,7 @@ data class FindProductBidsRequest(
             productId = productId,
             order = order ?: "createdTime",
             sort = sort ?: "desc",
-            type = type,
+            type = type!!,
             status = status,
             page = page ?: 1,
             size = size ?: 10

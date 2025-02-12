@@ -5,7 +5,7 @@ data class FindProductBidsQuery(
     val productId: Long,
     val order: String,
     val sort: String,
-    val type: String?,
+    val type: String,
     val status: String?,
     val page: Int,
     val size: Int

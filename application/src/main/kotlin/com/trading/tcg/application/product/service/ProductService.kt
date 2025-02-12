@@ -38,17 +38,6 @@ class ProductService(
     }
 
     @Transactional(readOnly = true)
-    override fun findProductCount(query: FindProductsQuery): Response<ProductCountDto> {
-        val count = productPersistencePort.countProducts(query)
-
-        return Response.of(
-            data = ProductCountDto(
-                count = count
-            )
-        )
-    }
-
-    @Transactional(readOnly = true)
     override fun findProduct(query: FindProductQuery): Response<ProductDetailDto> {
         val product = productPersistencePort.findProduct(query)
             ?: throw CustomException(ServiceErrorCode.NOT_FOUND_PRODUCT)
@@ -58,8 +47,14 @@ class ProductService(
         )
     }
 
+    @Transactional(readOnly = true)
     override fun findProductBids(query: FindProductBidsQuery): Response<List<ProductBidDto>> {
-        val productBids = productPersistencePort.findProductBids(query)
+        val productBids = when (query.type) {
+            "buy" -> productPersistencePort.findProductBuyBids(query)
+            "sell" -> productPersistencePort.findProductSellBids(query)
+            "deal" -> productPersistencePort.findProductDealBids(query)
+            else -> throw CustomException(ServiceErrorCode.INVALID_PRODUCT_BID_TYPE)
+        }
 
         return Response.of(
             pageResult = productBids.pageResult,

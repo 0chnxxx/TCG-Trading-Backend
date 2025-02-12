@@ -1,8 +1,9 @@
 package com.trading.tcg.adapter.out.persistence.card.entity
 
-import com.trading.tcg.adapter.out.persistence.product.entity.ProductBidEntity
+import com.trading.tcg.adapter.out.persistence.product.entity.ProductBuyBidEntity
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductDealEntity
 import com.trading.tcg.adapter.out.persistence.product.entity.ProductEntity
+import com.trading.tcg.adapter.out.persistence.product.entity.ProductSellBidEntity
 import com.trading.tcg.adapter.out.persistence.user.entity.UserProductBookmarkEntity
 import com.trading.tcg.application.card.domain.DigimonCard
 import com.trading.tcg.application.product.domain.Product
@@ -74,11 +75,13 @@ class DigimonCardEntity(
 
     buyBidCount: Int,
 
+    buyBids: List<ProductBuyBidEntity>,
+
     directSellPrice: BigDecimal?,
 
     sellBidCount: Int,
 
-    bids: List<ProductBidEntity>,
+    sellBids: List<ProductSellBidEntity>,
 
     bookmarkCount: Int,
 
@@ -90,9 +93,10 @@ class DigimonCardEntity(
     deals = deals,
     directBuyPrice = directBuyPrice,
     buyBidCount = buyBidCount,
+    buyBids = buyBids,
     directSellPrice = directSellPrice,
     sellBidCount = sellBidCount,
-    bids = bids,
+    sellBids = sellBids,
     bookmarkCount = bookmarkCount,
     bookmarks = bookmarks
 ) {
@@ -120,10 +124,10 @@ class DigimonCardEntity(
             recentDealPrice = recentDealPrice,
             directBuyPrice = directBuyPrice,
             directSellPrice = directSellPrice,
-            dealCount = dealCount,
-            buyBidCount = buyBidCount,
-            sellBidCount = sellBidCount,
-            bookmarkCount = bookmarkCount,
+            deals = emptyList(),
+            buyBids = emptyList(),
+            sellBids = emptyList(),
+            bookmarks = emptyList(),
             createdTime = createdTime,
             updatedTime = updatedTime
         )

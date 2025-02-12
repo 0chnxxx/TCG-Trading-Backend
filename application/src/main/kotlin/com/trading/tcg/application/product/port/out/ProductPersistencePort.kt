@@ -12,8 +12,8 @@ import com.trading.tcg.global.dto.Pageable
 interface ProductPersistencePort {
     fun findProductCatalog(): ProductCatalogDto
     fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>>
-    fun countProducts(query: FindProductsQuery): Long
     fun findProduct(query: FindProductQuery): ProductDetailDto?
-    fun findProductBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>>
-    fun countProductBids(query: FindProductBidsQuery): Long
+    fun findProductBuyBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>>
+    fun findProductSellBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>>
+    fun findProductDealBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>>
 }

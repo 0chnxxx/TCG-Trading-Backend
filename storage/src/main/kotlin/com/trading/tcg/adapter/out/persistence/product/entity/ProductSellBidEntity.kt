@@ -9,8 +9,8 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "product_bid")
-class ProductBidEntity(
+@Table(name = "product_sell_bid")
+class ProductSellBidEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -23,10 +23,6 @@ class ProductBidEntity(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     val user: UserEntity,
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    val type: ProductBidType,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

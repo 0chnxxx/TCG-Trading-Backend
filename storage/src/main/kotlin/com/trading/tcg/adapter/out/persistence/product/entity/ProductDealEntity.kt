@@ -1,7 +1,6 @@
 package com.trading.tcg.adapter.out.persistence.product.entity
 
 import com.trading.tcg.adapter.out.persistence.global.entity.BaseEntity
-import com.trading.tcg.adapter.out.persistence.user.entity.UserEntity
 import jakarta.persistence.*
 import java.math.BigDecimal
 
@@ -19,11 +18,11 @@ class ProductDealEntity(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buy_bid_id", nullable = false)
-    val buyBid: ProductBidEntity,
+    val buyBid: ProductBuyBidEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sell_bid_id", nullable = false)
-    val sellBid: ProductBidEntity,
+    val sellBid: ProductBuyBidEntity,
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     val price: BigDecimal,

@@ -8,7 +8,6 @@ class ProductBid(
     val id: Long?,
     val product: Product,
     val user: User,
-    val type: ProductBidType,
     val status: ProductBidStatus,
     val price: BigDecimal,
     val totalQuantity: Int,

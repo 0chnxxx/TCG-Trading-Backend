@@ -10,10 +10,10 @@ class Product(
     val recentDealPrice: BigDecimal?,
     val directBuyPrice: BigDecimal?,
     val directSellPrice: BigDecimal?,
-    val dealCount: Int,
-    val buyBidCount: Int,
-    val sellBidCount: Int,
-    val bookmarkCount: Int,
+    val deals: List<ProductDeal>,
+    val buyBids: List<ProductBid>,
+    val sellBids: List<ProductBid>,
+    val bookmarks: List<ProductBookmark>,
     val createdTime: LocalDateTime,
     val updatedTime: LocalDateTime?
 )
