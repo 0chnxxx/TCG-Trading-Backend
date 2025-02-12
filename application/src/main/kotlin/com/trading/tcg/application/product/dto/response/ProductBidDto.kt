@@ -1,6 +1,6 @@
 package com.trading.tcg.application.product.dto.response
 
-import com.trading.tcg.global.util.toDisplayString
+import com.trading.tcg.global.util.BigDecimalUtil.toDisplayString
 import java.math.BigDecimal
 import java.time.LocalDateTime
 

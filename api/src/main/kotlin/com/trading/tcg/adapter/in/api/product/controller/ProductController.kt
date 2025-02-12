@@ -1,13 +1,11 @@
 package com.trading.tcg.adapter.`in`.api.product.controller
 
+import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidTrendRequest
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidsRequest
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductRequest
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductsRequest
 import com.trading.tcg.adapter.`in`.swagger.product.ProductSwagger
-import com.trading.tcg.application.product.dto.response.ProductBidDto
-import com.trading.tcg.application.product.dto.response.ProductCatalogDto
-import com.trading.tcg.application.product.dto.response.ProductDetailDto
-import com.trading.tcg.application.product.dto.response.ProductDto
+import com.trading.tcg.application.product.dto.response.*
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.dto.Response
@@ -52,5 +50,13 @@ class ProductController(
         request: FindProductBidsRequest
     ): ResponseEntity<Response<List<ProductBidDto>>> {
         return ResponseEntity(productUseCase.findProductBids(request.toQuery(provider)), HttpStatus.OK)
+    }
+
+    @GetMapping("/products/{productId}/bids/trend")
+    override fun findProductBidTrend(
+        provider: Provider,
+        request: FindProductBidTrendRequest
+    ): ResponseEntity<Response<ProductBidTrendDto>> {
+        return ResponseEntity(productUseCase.findProductBidTrend(request.toQuery(provider)), HttpStatus.OK)
     }
 }

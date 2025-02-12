@@ -1,5 +1,6 @@
 package com.trading.tcg.application.product.service
 
+import com.trading.tcg.application.product.dto.request.FindProductBidTrendQuery
 import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
@@ -59,6 +60,15 @@ class ProductService(
         return Response.of(
             pageResult = productBids.pageResult,
             data = productBids.data
+        )
+    }
+
+    @Transactional(readOnly = true)
+    override fun findProductBidTrend(query: FindProductBidTrendQuery): Response<ProductBidTrendDto> {
+        val productBidTrend = productPersistencePort.findProductBidTrend(query)
+
+        return Response.of(
+            data = productBidTrend
         )
     }
 }

@@ -6,25 +6,26 @@ import com.querydsl.core.types.ExpressionUtils
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.Projections
-import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.trading.tcg.adapter.out.persistence.card.entity.*
+import com.trading.tcg.adapter.out.persistence.global.util.ExpressionUtil
 import com.trading.tcg.adapter.out.persistence.product.entity.*
 import com.trading.tcg.adapter.out.persistence.user.entity.QUserEntity
 import com.trading.tcg.adapter.out.persistence.user.entity.QUserProductBookmarkEntity
 import com.trading.tcg.application.product.domain.ProductBidStatus
+import com.trading.tcg.application.product.dto.request.FindProductBidTrendQuery
 import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
-import com.trading.tcg.application.product.dto.response.ProductBidDto
-import com.trading.tcg.application.product.dto.response.ProductCatalogDto
-import com.trading.tcg.application.product.dto.response.ProductDetailDto
-import com.trading.tcg.application.product.dto.response.ProductDto
+import com.trading.tcg.application.product.dto.response.*
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
 import com.trading.tcg.global.dto.Pageable
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import kotlin.math.min
 
 @Repository
 class ProductPersistenceAdapter(
@@ -103,30 +104,30 @@ class ProductPersistenceAdapter(
             "pokemon" -> {
                 whereBuilder.and(qPokemonCard.id.isNotNull)
                 whereBuilder.and(qPokemonCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.rank) { qPokemonCard.rank.eq(it) })
-                whereBuilder.and(combineExpressions(query.category) { qPokemonCard.categories.contains(it) })
-                whereBuilder.and(combineExpressions(query.type) { qPokemonCard.type.eq(it) })
-                whereBuilder.and(combineExpressions(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.rank) { qPokemonCard.rank.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.category) { qPokemonCard.categories.contains(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.type) { qPokemonCard.type.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
             }
 
             "yugioh" -> {
                 whereBuilder.and(qYugiohCard.id.isNotNull)
                 whereBuilder.and(qYugiohCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.category) { qYugiohCard.categories.contains(it) })
-                whereBuilder.and(combineExpressions(query.type) { qYugiohCard.type.eq(it) })
-                whereBuilder.and(combineExpressions(query.effect) { qYugiohCard.effect.eq(it) })
-                whereBuilder.and(combineExpressions(query.species) { qYugiohCard.species.eq(it) })
-                whereBuilder.and(combineExpressions(query.summonType) { qYugiohCard.summonType.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.category) { qYugiohCard.categories.contains(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.type) { qYugiohCard.type.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.effect) { qYugiohCard.effect.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.species) { qYugiohCard.species.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.summonType) { qYugiohCard.summonType.eq(it) })
             }
 
             "digimon" -> {
                 whereBuilder.and(qDigimonCard.id.isNotNull)
                 whereBuilder.and(qDigimonCard.name.contains(query.search))
-                whereBuilder.and(combineExpressions(query.rank) { qDigimonCard.rank.eq(it) })
-                whereBuilder.and(combineExpressions(query.category) { qDigimonCard.category.eq(it) })
-                whereBuilder.and(combineExpressions(query.type) { qDigimonCard.types.contains(it) })
-                whereBuilder.and(combineExpressions(query.form) { qDigimonCard.form.eq(it) })
-                whereBuilder.and(combineExpressions(query.species) { qDigimonCard.species.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.rank) { qDigimonCard.rank.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.category) { qDigimonCard.category.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.type) { qDigimonCard.types.contains(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.form) { qDigimonCard.form.eq(it) })
+                whereBuilder.and(ExpressionUtil.orAll(query.species) { qDigimonCard.species.eq(it) })
             }
         }
 
@@ -538,14 +539,49 @@ class ProductPersistenceAdapter(
         )
     }
 
-    private fun <T> combineExpressions(
-        values: List<T>,
-        predicate: (T) -> BooleanExpression
-    ): BooleanExpression? {
-        val combinedExpression = values
-            .map(predicate)
-            .reduceOrNull { acc, expression -> acc.or(expression) }
+    override fun findProductBidTrend(query: FindProductBidTrendQuery): ProductBidTrendDto {
+        val qProductDeal = QProductDealEntity.productDealEntity
 
-        return combinedExpression
+        val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
+
+        val totalCount = jpaQueryFactory
+            .select(qProductDeal.id.count())
+            .from(qProductDeal)
+            .where(
+                qProductDeal.product.id.eq(query.productId)
+                    .and(qProductDeal.createdTime.after(sixMonthsAgo))
+            )
+            .fetchOne() ?: 0
+
+        val maxBucketCount = 12L
+        val minBucketCount = Math.min(totalCount, maxBucketCount)
+        val itemsPerBucket = (totalCount / minBucketCount).let { if (it == 0L) 1L else it }
+
+        val bucketExpression = Expressions.numberTemplate(
+            Long::class.java,
+            "FLOOR(TIMESTAMPDIFF(SECOND, {0}, {1}) / {2})",
+            Expressions.constant(sixMonthsAgo),
+            qProductDeal.createdTime,
+            itemsPerBucket
+        )
+
+        val data = jpaQueryFactory
+            .select(
+                qProductDeal.price.avg().longValue()
+            )
+            .from(qProductDeal)
+            .where(
+                qProductDeal.product.id.eq(query.productId)
+                    .and(qProductDeal.createdTime.after(sixMonthsAgo))
+            )
+            .groupBy(bucketExpression)
+            .orderBy(bucketExpression.asc())
+            .fetch()
+
+        return ProductBidTrendDto(
+            prices = data,
+            minPrice = data.min(),
+            maxPrice = data.max()
+        )
     }
 }

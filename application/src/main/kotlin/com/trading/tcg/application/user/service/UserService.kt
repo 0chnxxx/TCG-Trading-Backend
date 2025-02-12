@@ -12,7 +12,7 @@ import com.trading.tcg.global.exception.ServiceErrorCode
 import com.trading.tcg.global.jwt.dto.request.CreateTokenCommand
 import com.trading.tcg.global.jwt.dto.response.JwtToken
 import com.trading.tcg.global.jwt.service.JwtTokenProvider
-import com.trading.tcg.global.util.encodeToSha512
+import com.trading.tcg.global.util.EncryptUtil.encodeToSha512
 import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
