@@ -11,19 +11,14 @@ import org.springframework.web.bind.annotation.PathVariable
 
 data class FindProductBidTrendRequest(
     @PathVariable
-    val productId: Long,
-
-    @field:NotNull(message = "필수 파라미터가 입력되지 않았습니다.")
-//    @field:Pattern(regexp = "^(bidding|dealt|cancelled|closed)", message = "유효한 타입이 아닙니다.")
-    val interval: Int?
+    val productId: Long
 ): SelfValidator() {
     fun toQuery(provider: Provider): FindProductBidTrendQuery {
         validate()
 
         return FindProductBidTrendQuery(
             userId = provider.getUser()?.id ?: 0,
-            productId = productId,
-            interval = interval
+            productId = productId
         )
     }
 }
