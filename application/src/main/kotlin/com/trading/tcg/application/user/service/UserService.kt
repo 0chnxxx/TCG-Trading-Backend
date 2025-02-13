@@ -1,8 +1,10 @@
 package com.trading.tcg.application.user.service
 
 import com.trading.tcg.application.user.dto.request.DeleteUserCommand
+import com.trading.tcg.application.user.dto.request.FindUserQuery
 import com.trading.tcg.application.user.dto.request.LoginUserCommand
 import com.trading.tcg.application.user.dto.request.RegisterUserCommand
+import com.trading.tcg.application.user.dto.response.UserDto
 import com.trading.tcg.application.user.port.`in`.UserUseCase
 import com.trading.tcg.application.user.port.out.UserPersistencePort
 import com.trading.tcg.global.dto.Response
@@ -24,6 +26,21 @@ class UserService(
     private val userPersistencePort: UserPersistencePort,
     private val jwtTokenProvider: JwtTokenProvider
 ): UserUseCase {
+    @Transactional(readOnly = true)
+    override fun findMe(query: FindUserQuery): Response<UserDto> {
+        val user = userPersistencePort.findById(query.userId)
+            .orElseThrow { CustomException(UserErrorCode.NOT_FOUND_USER) }
+
+        val userDto = UserDto(
+            id = user.id!!,
+            email = user.email
+        )
+
+        return Response.of(
+            data = userDto
+        )
+    }
+
     @Transactional
     override fun register(command: RegisterUserCommand): Response<JwtToken> {
         val user = User(

@@ -2,6 +2,7 @@ package com.trading.tcg.adapter.`in`.api.user.dto
 
 import com.trading.tcg.application.user.dto.request.DeleteUserCommand
 import com.trading.tcg.application.user.dto.request.LoginUserCommand
+import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.validation.SelfValidator
 import com.trading.tcg.global.validation.ValidationGroup
 import jakarta.validation.constraints.Email
