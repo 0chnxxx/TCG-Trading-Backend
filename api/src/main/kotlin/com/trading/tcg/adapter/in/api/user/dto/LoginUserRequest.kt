@@ -1,6 +1,7 @@
 package com.trading.tcg.adapter.`in`.api.user.dto
 
 import com.trading.tcg.application.user.dto.request.LoginUserCommand
+import com.trading.tcg.global.validation.SelfValidator
 import com.trading.tcg.global.validation.ValidationGroup
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -21,8 +22,10 @@ data class LoginUserRequest(
     )
     @field:Length(min = 8, max = 20, message = "비밀번호가 글자수 범위를 벗어났습니다.")
     val password: String
-) {
+): SelfValidator() {
     fun toCommand(): LoginUserCommand {
+        validate()
+
         return LoginUserCommand(
             email = email,
             password = password

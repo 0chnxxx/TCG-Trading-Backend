@@ -10,6 +10,7 @@ import com.trading.tcg.global.validation.ValidationSequence
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -20,7 +21,7 @@ class UserController(
 ): UserSwagger {
     @PostMapping("/users/register")
     override fun registerUser(
-        @RequestBody @Validated(ValidationSequence::class)
+        @RequestBody
         request: RegisterUserRequest
     ): ResponseEntity<Response<JwtToken>> {
         return ResponseEntity(userUseCase.register(request.toCommand()), HttpStatus.CREATED)
@@ -28,7 +29,7 @@ class UserController(
 
     @PostMapping("/users/login")
     override fun loginUser(
-        @RequestBody @Validated(ValidationSequence::class)
+        @RequestBody
         request: LoginUserRequest
     ): ResponseEntity<Response<JwtToken>> {
         return ResponseEntity(userUseCase.login(request.toCommand()), HttpStatus.OK)

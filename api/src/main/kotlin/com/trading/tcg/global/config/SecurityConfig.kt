@@ -91,8 +91,8 @@ class SecurityConfig(
 
             val errorResponse = ErrorResponse.of(
                 path = request.requestURI,
-                errorCode = errorCode.getErrorCode(),
-                errorMessage = errorCode.getErrorMessage()
+                errorCode = errorCode.errorCode,
+                errorMessage = errorCode.errorMessage
             )
 
             val json: String = objectMapper.writeValueAsString(errorResponse)
@@ -108,8 +108,8 @@ class SecurityConfig(
 
             val errorResponse = ErrorResponse.of(
                 path = request.requestURI,
-                errorCode = errorCode.getErrorCode(),
-                errorMessage = errorCode.getErrorMessage()
+                errorCode = errorCode.errorCode,
+                errorMessage = errorCode.errorMessage
             )
 
             val json: String = objectMapper.writeValueAsString(errorResponse)

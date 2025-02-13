@@ -1,8 +1,13 @@
 package com.trading.tcg.global.exception
 
 import com.trading.tcg.global.dto.ErrorResponse
+import com.trading.tcg.product.exception.ProductErrorCode
+import com.trading.tcg.user.exception.UserErrorCode
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
+import org.springframework.core.type.filter.AssignableTypeFilter
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
@@ -13,6 +18,12 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+    val errorCodes = arrayOf(
+        ApplicationErrorCode::class.java,
+        UserErrorCode::class.java,
+        ProductErrorCode::class.java
+    ).flatMap { it.enumConstants.asIterable() }.map { it as ErrorCode }
+
     @ExceptionHandler(value = [Exception::class])
     fun handleException(e: Exception, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
         val errorResponse = ErrorResponse.of(
@@ -30,11 +41,11 @@ class GlobalExceptionHandler {
     fun handleCustomException(e: CustomException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
-            errorCode = e.errorCode.getErrorCode(),
-            errorMessage = e.errorCode.getErrorMessage()
+            errorCode = e.errorCode.errorCode,
+            errorMessage = e.errorCode.errorMessage
         )
 
-        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(e.errorCode.getStatusCode()))
+        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(e.errorCode.statusCode))
     }
 
     @ExceptionHandler(value = [NoResourceFoundException::class])
@@ -46,11 +57,11 @@ class GlobalExceptionHandler {
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
-            errorCode = errorCode.getErrorCode(),
-            errorMessage = errorCode.getErrorMessage()
+            errorCode = errorCode.errorCode,
+            errorMessage = errorCode.errorMessage
         )
 
-        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.getStatusCode()))
+        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.statusCode))
     }
 
     @ExceptionHandler(value = [AccessDeniedException::class])
@@ -62,11 +73,11 @@ class GlobalExceptionHandler {
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
-            errorCode = errorCode.getErrorCode(),
-            errorMessage = errorCode.getErrorMessage()
+            errorCode = errorCode.errorCode,
+            errorMessage = errorCode.errorMessage
         )
 
-        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.getStatusCode()))
+        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.statusCode))
     }
 
     @ExceptionHandler(value = [ConstraintViolationException::class])
@@ -74,17 +85,17 @@ class GlobalExceptionHandler {
         e: ConstraintViolationException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode = ApplicationErrorCode.entries.first { it ->
-            e.constraintViolations.map { it.messageTemplate }.contains(it.getErrorMessage())
+        val errorCode = errorCodes.first { it ->
+            e.constraintViolations.map { it.messageTemplate }.contains(it.errorMessage)
         }
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
-            errorCode = errorCode.getErrorCode(),
-            errorMessage = errorCode.getErrorMessage()
+            errorCode = errorCode.errorCode,
+            errorMessage = errorCode.errorMessage
         )
 
-        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.getStatusCode()))
+        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.statusCode))
     }
 
     @ExceptionHandler(value = [MethodArgumentNotValidException::class])
@@ -92,15 +103,16 @@ class GlobalExceptionHandler {
         e: MethodArgumentNotValidException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode =
-            ApplicationErrorCode.entries.first { e.bindingResult.fieldError?.defaultMessage.equals(it.getErrorMessage()) }
+        val errorCode = errorCodes.first {
+            e.bindingResult.fieldError?.defaultMessage.equals(it.errorMessage)
+        }
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
-            errorCode = errorCode.getErrorCode(),
-            errorMessage = errorCode.getErrorMessage()
+            errorCode = errorCode.errorCode,
+            errorMessage = errorCode.errorMessage
         )
 
-        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.getStatusCode()))
+        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.statusCode))
     }
 }
