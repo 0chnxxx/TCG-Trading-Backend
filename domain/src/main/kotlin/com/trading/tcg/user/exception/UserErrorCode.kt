@@ -7,6 +7,7 @@ enum class UserErrorCode(
     override val errorCode: String,
     override val errorMessage: String
 ) : ErrorCode {
+    NOT_FOUND_USER(404, "NOT_FOUND_USER", "유저가 존재하지 않습니다."),
     BLANK_EMAIL(400, "BLANK_EMAIL", "이메일이 입력되지 않았습니다."),
     OUT_OF_RANGE_EMAIL(400, "OUT_OF_RANGE_EMAIL", "이메일이 글자수 범위를 벗어났습니다."),
     INCORRECT_EMAIL(409, "INCORRECT_EMAIL", "이메일 형식이 올바르지 않습니다."),

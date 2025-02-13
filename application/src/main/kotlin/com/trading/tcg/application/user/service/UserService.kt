@@ -1,5 +1,6 @@
 package com.trading.tcg.application.user.service
 
+import com.trading.tcg.application.user.dto.request.DeleteUserCommand
 import com.trading.tcg.application.user.dto.request.LoginUserCommand
 import com.trading.tcg.application.user.dto.request.RegisterUserCommand
 import com.trading.tcg.application.user.port.`in`.UserUseCase
@@ -65,5 +66,13 @@ class UserService(
         return Response.of(
             data = token
         )
+    }
+
+    @Transactional
+    override fun delete(command: DeleteUserCommand) {
+        val user = userPersistencePort.findById(command.userId)
+            .orElseThrow { throw CustomException(UserErrorCode.NOT_FOUND_USER) }
+
+        userPersistencePort.delete(user)
     }
 }

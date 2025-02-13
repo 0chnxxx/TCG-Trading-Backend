@@ -1,5 +1,6 @@
 package com.trading.tcg.adapter.`in`.swagger.user
 
+import com.trading.tcg.adapter.`in`.api.user.dto.DeleteUserRequest
 import com.trading.tcg.adapter.`in`.api.user.dto.LoginUserRequest
 import com.trading.tcg.adapter.`in`.api.user.dto.RegisterUserRequest
 import com.trading.tcg.global.dto.Response
@@ -19,4 +20,9 @@ interface UserSwagger {
     fun loginUser(
         request: LoginUserRequest
     ): ResponseEntity<Response<JwtToken>>
+
+    @Operation(summary = "유저 회원탈퇴", description = "유저를 탈퇴시킨다.")
+    fun deleteUser(
+        request: DeleteUserRequest
+    ): ResponseEntity<Unit>
 }

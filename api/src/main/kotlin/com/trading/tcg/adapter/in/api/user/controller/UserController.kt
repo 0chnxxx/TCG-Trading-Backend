@@ -1,5 +1,6 @@
 package com.trading.tcg.adapter.`in`.api.user.controller
 
+import com.trading.tcg.adapter.`in`.api.user.dto.DeleteUserRequest
 import com.trading.tcg.adapter.`in`.api.user.dto.LoginUserRequest
 import com.trading.tcg.adapter.`in`.api.user.dto.RegisterUserRequest
 import com.trading.tcg.adapter.`in`.swagger.user.UserSwagger
@@ -33,5 +34,13 @@ class UserController(
         request: LoginUserRequest
     ): ResponseEntity<Response<JwtToken>> {
         return ResponseEntity(userUseCase.login(request.toCommand()), HttpStatus.OK)
+    }
+
+    @DeleteMapping("/users/{userId}")
+    override fun deleteUser(
+        request: DeleteUserRequest
+    ): ResponseEntity<Unit> {
+        userUseCase.delete(request.toCommand())
+        return ResponseEntity(HttpStatus.OK)
     }
 }
