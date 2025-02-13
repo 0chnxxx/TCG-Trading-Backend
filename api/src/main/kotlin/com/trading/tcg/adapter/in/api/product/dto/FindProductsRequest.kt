@@ -4,7 +4,6 @@ import com.trading.tcg.application.product.dto.request.FindProductsQuery
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.validation.SelfValidator
 import jakarta.validation.constraints.Min
-import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Pattern
 
 data class FindProductsRequest(

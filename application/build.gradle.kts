@@ -3,6 +3,8 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 val jwtVersion: String by project
 
 dependencies {
+    implementation(project(":domain"))
+
     // Spring Context
     implementation("org.springframework:spring-context")
 

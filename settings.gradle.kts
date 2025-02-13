@@ -2,6 +2,7 @@ rootProject.name = "tcg-trading"
 
 include("api")
 include("application")
+include("domain")
 include("storage")
 
 pluginManagement {

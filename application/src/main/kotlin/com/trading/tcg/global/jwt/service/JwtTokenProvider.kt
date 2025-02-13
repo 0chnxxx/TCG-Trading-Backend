@@ -13,6 +13,7 @@ import java.util.*
 class JwtTokenProvider {
     @Value("\${auth.jwt.secret-key}")
     private lateinit var SECRET_KEY: String
+
     private var ACCESS_EXPIRATION_TIME: Long = 2 * 60 * 60 * 1000L
     private var REFRESH_EXPIRATION_TIME: Long = 14 * 24 * 60 * 60 * 1000L
 

@@ -3,7 +3,7 @@ package com.trading.tcg.global.security
 import com.trading.tcg.application.user.port.out.UserPersistencePort
 import com.trading.tcg.global.dto.HttpProvider
 import com.trading.tcg.global.exception.CustomException
-import com.trading.tcg.global.exception.ServiceErrorCode
+import com.trading.tcg.global.exception.ApplicationErrorCode
 import com.trading.tcg.global.jwt.service.JwtTokenValidator
 import jakarta.servlet.http.HttpServletRequest
 import lombok.RequiredArgsConstructor
@@ -21,7 +21,9 @@ class CustomUserDetailsService(
     override fun loadUserByUsername(email: String?): UserDetails {
         val token = request.getHeader("Authorization")
         val decodedToken = jwtTokenValidator.validate(token)
-        val user = userPersistencePort.findByEmail(decodedToken.email) ?: throw CustomException(ServiceErrorCode.NOT_FOUND)
+
+        val user = userPersistencePort.findByEmail(decodedToken.email)
+            .orElseThrow { throw CustomException(ApplicationErrorCode.NOT_FOUND) }
 
         return HttpProvider(user)
     }

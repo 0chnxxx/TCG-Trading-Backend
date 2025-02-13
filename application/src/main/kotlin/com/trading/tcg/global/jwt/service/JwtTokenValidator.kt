@@ -1,7 +1,7 @@
 package com.trading.tcg.global.jwt.service
 
 import com.trading.tcg.global.exception.CustomException
-import com.trading.tcg.global.exception.ServiceErrorCode
+import com.trading.tcg.global.exception.ApplicationErrorCode
 import com.trading.tcg.global.jwt.dto.response.DecodedToken
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -28,15 +28,15 @@ class JwtTokenValidator {
                 email = decodedToken.body.subject
             )
         } catch (e: ExpiredJwtException) {
-            throw CustomException(ServiceErrorCode.EXPIRED_JWT)
+            throw CustomException(ApplicationErrorCode.EXPIRED_JWT)
         } catch (e: UnsupportedJwtException) {
-            throw CustomException(ServiceErrorCode.UNSUPPORTED_JWT)
+            throw CustomException(ApplicationErrorCode.UNSUPPORTED_JWT)
         } catch (e: SignatureException) {
-            throw CustomException(ServiceErrorCode.WRONG_SIGNATURE_JWT)
+            throw CustomException(ApplicationErrorCode.WRONG_SIGNATURE_JWT)
         } catch (e: MalformedJwtException) {
-            throw CustomException(ServiceErrorCode.MALFORMED_JWT)
+            throw CustomException(ApplicationErrorCode.MALFORMED_JWT)
         } catch (e: IllegalArgumentException) {
-            throw CustomException(ServiceErrorCode.ILLEGAL_ARGUMENT_JWT)
+            throw CustomException(ApplicationErrorCode.ILLEGAL_ARGUMENT_JWT)
         }
     }
 }

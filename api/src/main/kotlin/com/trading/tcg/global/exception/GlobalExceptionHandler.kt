@@ -42,7 +42,7 @@ class GlobalExceptionHandler {
         e: NoResourceFoundException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode = ServiceErrorCode.NOT_FOUND
+        val errorCode = ApplicationErrorCode.NOT_FOUND
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
@@ -58,7 +58,7 @@ class GlobalExceptionHandler {
         e: AccessDeniedException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode = ServiceErrorCode.FORBIDDEN
+        val errorCode = ApplicationErrorCode.FORBIDDEN
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
@@ -74,7 +74,7 @@ class GlobalExceptionHandler {
         e: ConstraintViolationException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode = ServiceErrorCode.entries.first { it ->
+        val errorCode = ApplicationErrorCode.entries.first { it ->
             e.constraintViolations.map { it.messageTemplate }.contains(it.getErrorMessage())
         }
 
@@ -93,7 +93,7 @@ class GlobalExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
         val errorCode =
-            ServiceErrorCode.entries.first { e.bindingResult.fieldError?.defaultMessage.equals(it.getErrorMessage()) }
+            ApplicationErrorCode.entries.first { e.bindingResult.fieldError?.defaultMessage.equals(it.getErrorMessage()) }
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,

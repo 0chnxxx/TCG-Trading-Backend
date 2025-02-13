@@ -4,6 +4,7 @@ val swaggerVersion: String by project
 
 dependencies {
     implementation(project(":application"))
+    implementation(project(":domain"))
     runtimeOnly(project(":storage"))
 
     // Spring Web

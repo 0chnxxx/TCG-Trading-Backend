@@ -9,7 +9,7 @@ import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
 import com.trading.tcg.global.dto.Response
 import com.trading.tcg.global.exception.CustomException
-import com.trading.tcg.global.exception.ServiceErrorCode
+import com.trading.tcg.product.exception.ProductErrorCode
 import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -41,7 +41,7 @@ class ProductService(
     @Transactional(readOnly = true)
     override fun findProduct(query: FindProductQuery): Response<ProductDetailDto> {
         val product = productPersistencePort.findProduct(query)
-            ?: throw CustomException(ServiceErrorCode.NOT_FOUND_PRODUCT)
+            ?: throw CustomException(ProductErrorCode.NOT_FOUND_PRODUCT)
 
         return Response.of(
             data = product
@@ -54,7 +54,7 @@ class ProductService(
             "buy" -> productPersistencePort.findProductBuyBids(query)
             "sell" -> productPersistencePort.findProductSellBids(query)
             "deal" -> productPersistencePort.findProductDealBids(query)
-            else -> throw CustomException(ServiceErrorCode.INVALID_PRODUCT_BID_TYPE)
+            else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_TYPE)
         }
 
         return Response.of(
