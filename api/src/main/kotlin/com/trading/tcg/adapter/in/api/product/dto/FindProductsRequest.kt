@@ -32,6 +32,8 @@ data class FindProductsRequest(
 
     val regulationMark: List<String>?,
 
+    val isBookmarked: Boolean?,
+
     val isExcludedNotBidProduct: Boolean?,
 
     val search: String?,
@@ -58,7 +60,8 @@ data class FindProductsRequest(
             species = species ?: emptyList(),
             summonType = summonType ?: emptyList(),
             regulationMark = regulationMark ?: emptyList(),
-            isExcludedNotBidProduct = isExcludedNotBidProduct ?: false,
+            isBookmarked = isBookmarked,
+            isExcludedNotBidProduct = isExcludedNotBidProduct,
             search = search,
             page = page ?: 1,
             size = size ?: 10

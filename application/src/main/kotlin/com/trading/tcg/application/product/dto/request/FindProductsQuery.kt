@@ -13,7 +13,8 @@ data class FindProductsQuery(
     val species: List<String>,
     val summonType: List<String>,
     val regulationMark: List<String>,
-    val isExcludedNotBidProduct: Boolean,
+    val isBookmarked: Boolean?,
+    val isExcludedNotBidProduct: Boolean?,
     val search: String?,
     val page: Int,
     val size: Int

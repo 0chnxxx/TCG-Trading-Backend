@@ -62,13 +62,14 @@ class ProductPersistenceAdapter(
     }
 
     override fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>> {
+        val qUser = QUser.user
         val qProduct = QProduct.product
         val qPokemonCard = QPokemonCard.pokemonCard
         val qYugiohCard = QYugiohCard.yugiohCard
         val qDigimonCard = QDigimonCard.digimonCard
         val qProductBuyBid = QProductBuyBid.productBuyBid
         val qProductSellBid = QProductSellBid.productSellBid
-        val qBookmark = QProductBookmark.productBookmark
+        val qProductBookmark = QProductBookmark.productBookmark
 
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
@@ -92,14 +93,10 @@ class ProductPersistenceAdapter(
             "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
         }
 
-        if (query.isExcludedNotBidProduct) {
-            whereBuilder.and(qProduct.buyBids.isNotEmpty.or(qProduct.sellBids.isNotEmpty))
-        }
-
         when (query.tab) {
             "pokemon" -> {
                 whereBuilder.and(qPokemonCard.id.isNotNull)
-                whereBuilder.and(qPokemonCard.name.contains(query.search))
+                if (query.search != null) whereBuilder.and(qPokemonCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.rank) { qPokemonCard.rank.eq(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.category) { qPokemonCard.categories.contains(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.type) { qPokemonCard.type.eq(it) })
@@ -108,7 +105,7 @@ class ProductPersistenceAdapter(
 
             "yugioh" -> {
                 whereBuilder.and(qYugiohCard.id.isNotNull)
-                whereBuilder.and(qYugiohCard.name.contains(query.search))
+                if (query.search != null) whereBuilder.and(qYugiohCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.category) { qYugiohCard.categories.contains(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.type) { qYugiohCard.type.eq(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.effect) { qYugiohCard.effect.eq(it) })
@@ -118,13 +115,21 @@ class ProductPersistenceAdapter(
 
             "digimon" -> {
                 whereBuilder.and(qDigimonCard.id.isNotNull)
-                whereBuilder.and(qDigimonCard.name.contains(query.search))
+                if (query.search != null) whereBuilder.and(qDigimonCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.rank) { qDigimonCard.rank.eq(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.category) { qDigimonCard.category.eq(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.type) { qDigimonCard.types.contains(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.form) { qDigimonCard.form.eq(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.species) { qDigimonCard.species.eq(it) })
             }
+        }
+
+        if (query.isBookmarked != null) {
+            whereBuilder.and(qProductBookmark.user.id.eq(query.userId))
+        }
+
+        if (query.isExcludedNotBidProduct != null && query.isExcludedNotBidProduct!!) {
+            whereBuilder.and(qProduct.buyBids.isNotEmpty.or(qProduct.sellBids.isNotEmpty))
         }
 
         val totalCount = jpaQueryFactory
@@ -135,6 +140,8 @@ class ProductPersistenceAdapter(
             .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
             .leftJoin(qProductBuyBid).on(qProductBuyBid.product.id.eq(qProduct.id))
             .leftJoin(qProductSellBid).on(qProductSellBid.product.id.eq(qProduct.id))
+            .leftJoin(qProductBookmark).on(qProductBookmark.product.id.eq(qProduct.id))
+            .leftJoin(qUser).on(qProductBookmark.user.id.eq(qUser.id))
             .where(whereBuilder.value)
             .fetchOne() ?: 0
 
@@ -164,9 +171,9 @@ class ProductPersistenceAdapter(
                         ExpressionUtils.list(
                             Long::class.java,
                             JPAExpressions
-                                .select(qBookmark.product.id)
-                                .from(qBookmark)
-                                .where(qBookmark.user.id.eq(query.userId))
+                                .select(qProductBookmark.product.id)
+                                .from(qProductBookmark)
+                                .where(qProductBookmark.user.id.eq(query.userId))
                         )
                     ),
                     qProduct.createdTime,
@@ -179,8 +186,11 @@ class ProductPersistenceAdapter(
             .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
             .leftJoin(qProductBuyBid).on(qProductBuyBid.product.id.eq(qProduct.id))
             .leftJoin(qProductSellBid).on(qProductSellBid.product.id.eq(qProduct.id))
+            .leftJoin(qProductBookmark).on(qProductBookmark.product.id.eq(qProduct.id))
+            .leftJoin(qUser).on(qProductBookmark.user.id.eq(qUser.id))
             .where(whereBuilder.value)
             .orderBy(*orderBuilder.toTypedArray())
+            .groupBy(qProduct.id)
             .offset(((query.page - 1) * query.size).toLong())
             .limit(query.size.toLong())
             .fetch()
