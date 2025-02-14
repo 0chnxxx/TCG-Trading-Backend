@@ -21,7 +21,27 @@ class ProductService(
 ): ProductUseCase {
     @Transactional(readOnly = true)
     override fun findProductCatalog(): Response<ProductCatalogDto> {
-        val productCatalog = productPersistencePort.findProductCatalog()
+        val productCategories = productPersistencePort.findProductCategoriesWithFilters()
+
+        val productCatalog = ProductCatalogDto(
+            categories = productCategories
+                .sortedBy { it.displayOrder }
+                .map { category ->
+                    ProductCatalogDto.ProductCategory(
+                        queryName = category.queryName,
+                        displayName = category.displayName,
+                        filters = category.filters
+                            .sortedBy { it.displayOrder }
+                            .map { filter ->
+                                ProductCatalogDto.ProductFilter(
+                                    queryName = filter.queryName,
+                                    displayName = filter.displayName,
+                                    options = filter.option.split("\n")
+                                )
+                            }
+                    )
+                }
+        )
 
         return Response.of(
             data = productCatalog
@@ -30,21 +50,21 @@ class ProductService(
 
     @Transactional(readOnly = true)
     override fun findProducts(query: FindProductsQuery): Response<List<ProductDto>> {
-        val products = productPersistencePort.findProducts(query)
+        val productDtos = productPersistencePort.findProductDtos(query)
 
         return Response.of(
-            pageResult = products.pageResult,
-            data = products.data
+            pageResult = productDtos.pageResult,
+            data = productDtos.data
         )
     }
 
     @Transactional(readOnly = true)
     override fun findProduct(query: FindProductQuery): Response<ProductDetailDto> {
-        val product = productPersistencePort.findProduct(query)
+        val productDto = productPersistencePort.findProductDto(query)
             ?: throw CustomException(ProductErrorCode.NOT_FOUND_PRODUCT)
 
         return Response.of(
-            data = product
+            data = productDto
         )
     }
 

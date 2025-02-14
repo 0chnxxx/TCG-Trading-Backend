@@ -13,15 +13,5 @@ data class ProductCatalogDto(
         val queryName: String,
         val displayName: String,
         val options: List<String>
-    ) {
-        constructor(
-            queryName: String,
-            displayName: String,
-            options: String
-        ): this(
-            queryName = queryName,
-            displayName = displayName,
-            options = options.split("\n")
-        )
-    }
+    )
 }

@@ -25,43 +25,10 @@ import java.time.LocalDateTime
 
 @Repository
 class ProductPersistenceAdapter(
-    val jpaQueryFactory: JPAQueryFactory
+    private val jpaQueryFactory: JPAQueryFactory,
+    private val productCategoryJpaRepository: ProductCategoryJpaRepository
 ): ProductPersistencePort {
-    override fun findProductCatalog(): ProductCatalogDto {
-        val qProductCategory = QProductCategory.productCategory
-        val qProductCategoryFilter = QProductCategoryFilter.productCategoryFilter
-
-        return ProductCatalogDto(
-            categories = jpaQueryFactory
-                .from(qProductCategory)
-                .leftJoin(qProductCategory.filters, qProductCategoryFilter)
-                .groupBy(qProductCategory.id, qProductCategoryFilter.id)
-                .orderBy(
-                    qProductCategory.displayOrder.asc(),
-                    qProductCategoryFilter.displayOrder.asc(),
-                )
-                .transform(
-                    GroupBy.groupBy(qProductCategory.id)
-                        .list(
-                            Projections.constructor(
-                                ProductCatalogDto.ProductCategory::class.java,
-                                qProductCategory.queryName,
-                                qProductCategory.displayName,
-                                GroupBy.list(
-                                    Projections.constructor(
-                                        ProductCatalogDto.ProductFilter::class.java,
-                                        qProductCategoryFilter.queryName,
-                                        qProductCategoryFilter.displayName,
-                                        qProductCategoryFilter.option
-                                    )
-                                )
-                            )
-                        )
-                )
-        )
-    }
-
-    override fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>> {
+    override fun findProductDtos(query: FindProductsQuery): Pageable<List<ProductDto>> {
         val qUser = QUser.user
         val qProduct = QProduct.product
         val qPokemonCard = QPokemonCard.pokemonCard
@@ -205,34 +172,7 @@ class ProductPersistenceAdapter(
         )
     }
 
-    private fun orderProducts(
-        orderBuilder: MutableList<OrderSpecifier<*>>,
-        query: FindProductsQuery,
-        qProduct: QProduct,
-        qProductBuyBid: QProductBuyBid,
-        qProductSellBid: QProductSellBid
-    ) {
-        val sort = Order.valueOf(query.sort.uppercase())
-
-        when (query.order) {
-            "id" -> orderBuilder.add(OrderSpecifier(sort, qProduct.id))
-            "bidPlacedTime" -> {
-                orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
-                orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
-            }
-
-            "bidClosedTime" -> {
-                orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.closedTime))
-                orderBuilder.add(OrderSpecifier(sort, qProductSellBid.closedTime))
-            }
-
-            "bidCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
-            "dealCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
-            "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
-        }
-    }
-
-    override fun findProduct(query: FindProductQuery): ProductDetailDto? {
+    override fun findProductDto(query: FindProductQuery): ProductDetailDto? {
         val qProduct = QProduct.product
         val qPokemonCard = QPokemonCard.pokemonCard
         val qPokemonCardPack = QPokemonCardPack.pokemonCardPack
@@ -344,6 +284,10 @@ class ProductPersistenceAdapter(
                     )
                 )
             ).firstOrNull()
+    }
+
+    override fun findProductCategoriesWithFilters(): List<ProductCategory> {
+        return productCategoryJpaRepository.findAllWithFilters()
     }
 
     override fun findProductBuyBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>> {
