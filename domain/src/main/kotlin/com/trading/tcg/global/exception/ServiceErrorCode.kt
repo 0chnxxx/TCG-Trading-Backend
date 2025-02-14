@@ -1,6 +1,6 @@
 package com.trading.tcg.global.exception
 
-enum class ApplicationErrorCode(
+enum class ServiceErrorCode(
     override val statusCode: Int,
     override val errorCode: String,
     override val errorMessage: String

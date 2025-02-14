@@ -1,7 +1,6 @@
 package com.trading.tcg.global.jwt.service
 
 import com.trading.tcg.global.exception.CustomException
-import com.trading.tcg.global.exception.ApplicationErrorCode
 import com.trading.tcg.global.jwt.domain.JwtErrorCode
 import com.trading.tcg.global.jwt.dto.response.DecodedToken
 import io.jsonwebtoken.ExpiredJwtException

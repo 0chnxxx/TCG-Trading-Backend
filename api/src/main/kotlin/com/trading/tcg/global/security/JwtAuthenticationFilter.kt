@@ -2,7 +2,6 @@ package com.trading.tcg.global.security
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.trading.tcg.global.dto.ErrorResponse
-import com.trading.tcg.global.exception.ApplicationErrorCode
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.jwt.service.JwtTokenValidator
 import jakarta.servlet.FilterChain
@@ -15,9 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
 
 @Component
 @RequiredArgsConstructor

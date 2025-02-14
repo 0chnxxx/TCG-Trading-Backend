@@ -1,7 +1,7 @@
 package com.trading.tcg.adapter.`in`.api.product.controller
 
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidTrendRequest
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidsRequest
+import com.trading.tcg.adapter.`in`.api.product.dto.FindProductPriceTrendRequest
+import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidHistoryRequest
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductRequest
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductsRequest
 import com.trading.tcg.adapter.`in`.swagger.product.ProductSwagger
@@ -38,25 +38,28 @@ class ProductController(
 
     @GetMapping("/products/{productId}")
     override fun findProduct(
+        @AuthenticationPrincipal
         provider: Provider,
         request: FindProductRequest
     ): ResponseEntity<Response<ProductDetailDto>> {
         return ResponseEntity(productUseCase.findProduct(request.toQuery(provider)), HttpStatus.OK)
     }
 
-    @GetMapping("/products/{productId}/bids")
-    override fun findProductBids(
+    @GetMapping("/products/{productId}/bids/histories")
+    override fun findProductBidHistories(
+        @AuthenticationPrincipal
         provider: Provider,
-        request: FindProductBidsRequest
-    ): ResponseEntity<Response<List<ProductBidDto>>> {
-        return ResponseEntity(productUseCase.findProductBids(request.toQuery(provider)), HttpStatus.OK)
+        request: FindProductBidHistoryRequest
+    ): ResponseEntity<Response<List<ProductBidHistoryDto>>> {
+        return ResponseEntity(productUseCase.findProductBidHistories(provider, request.toQuery(provider)), HttpStatus.OK)
     }
 
     @GetMapping("/products/{productId}/bids/trend")
-    override fun findProductBidTrend(
+    override fun findProductPriceTrend(
+        @AuthenticationPrincipal
         provider: Provider,
-        request: FindProductBidTrendRequest
-    ): ResponseEntity<Response<ProductBidTrendDto>> {
-        return ResponseEntity(productUseCase.findProductBidTrend(request.toQuery(provider)), HttpStatus.OK)
+        request: FindProductPriceTrendRequest
+    ): ResponseEntity<Response<ProductPriceTrendDto>> {
+        return ResponseEntity(productUseCase.findProductPriceTrend(request.toQuery(provider)), HttpStatus.OK)
     }
 }

@@ -10,14 +10,17 @@ import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.trading.tcg.adapter.out.persistence.global.util.ExpressionUtil
-import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
+import com.trading.tcg.application.product.dto.request.FindProductBidHistoryQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
-import com.trading.tcg.application.product.dto.response.*
+import com.trading.tcg.application.product.dto.response.ProductDetailDto
+import com.trading.tcg.application.product.dto.response.ProductDto
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
 import com.trading.tcg.card.domain.*
 import com.trading.tcg.global.dto.Pageable
+import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.product.domain.*
+import com.trading.tcg.product.exception.ProductErrorCode
 import com.trading.tcg.user.domain.QUser
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -41,27 +44,24 @@ class ProductPersistenceAdapter(
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
 
-        val sort = Order.valueOf(query.sort.uppercase())
+        val sort = Order.valueOf(query.sort.name)
 
         when (query.order) {
-            "id" -> orderBuilder.add(OrderSpecifier(sort, qProduct.id))
-            "bidPlacedTime" -> {
+            ProductOrderBy.BID_PLACED_TIME -> {
                 orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
                 orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
             }
-
-            "bidClosedTime" -> {
+            ProductOrderBy.BID_CLOSED_TIME -> {
                 orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.closedTime))
                 orderBuilder.add(OrderSpecifier(sort, qProductSellBid.closedTime))
             }
-
-            "bidCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
-            "dealCount" -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
-            "price" -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
+            ProductOrderBy.BID_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
+            ProductOrderBy.DEAL_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
+            ProductOrderBy.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
         }
 
         when (query.tab) {
-            "pokemon" -> {
+            ProductTab.POKEMON -> {
                 whereBuilder.and(qPokemonCard.id.isNotNull)
                 if (query.search != null) whereBuilder.and(qPokemonCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.rank) { qPokemonCard.rank.eq(it) })
@@ -70,7 +70,7 @@ class ProductPersistenceAdapter(
                 whereBuilder.and(ExpressionUtil.orAll(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
             }
 
-            "yugioh" -> {
+            ProductTab.YUGIOH -> {
                 whereBuilder.and(qYugiohCard.id.isNotNull)
                 if (query.search != null) whereBuilder.and(qYugiohCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.category) { qYugiohCard.categories.contains(it) })
@@ -80,7 +80,7 @@ class ProductPersistenceAdapter(
                 whereBuilder.and(ExpressionUtil.orAll(query.summonType) { qYugiohCard.summonType.eq(it) })
             }
 
-            "digimon" -> {
+            ProductTab.DIGIMON -> {
                 whereBuilder.and(qDigimonCard.id.isNotNull)
                 if (query.search != null) whereBuilder.and(qDigimonCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.rank) { qDigimonCard.rank.eq(it) })
@@ -89,6 +89,8 @@ class ProductPersistenceAdapter(
                 whereBuilder.and(ExpressionUtil.orAll(query.form) { qDigimonCard.form.eq(it) })
                 whereBuilder.and(ExpressionUtil.orAll(query.species) { qDigimonCard.species.eq(it) })
             }
+
+            else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_TAB)
         }
 
         if (query.isBookmarked != null) {
@@ -290,49 +292,45 @@ class ProductPersistenceAdapter(
         return productCategoryJpaRepository.findAllWithFilters()
     }
 
-    override fun findProductBuyBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>> {
+    override fun findProductBuyBids(query: FindProductBidHistoryQuery): Pageable<List<ProductBuyBid>> {
         val qUser = QUser.user
+        val qProduct = QProduct.product
         val qProductBuyBid = QProductBuyBid.productBuyBid
 
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
 
-        val sort = Order.valueOf(query.sort.uppercase())
+        val sort = Order.valueOf(query.sort.name)
 
         when (query.order) {
-            "createdTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
-            "price" -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.price))
-            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.stock))
+            ProductBidOrderBy.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
+            ProductBidOrderBy.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.price))
+            ProductBidOrderBy.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.stock))
         }
 
         whereBuilder.and(qProductBuyBid.product.id.eq(query.productId))
 
         when (query.status) {
-            "bidding" -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.BIDDING))
-            "dealt" -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.DEALT))
-            "cancelled" -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.CANCELLED))
-            "closed" -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.CLOSED))
+            ProductBidStatus.BIDDING -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.BIDDING))
+            ProductBidStatus.DEALT -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.DEALT))
+            ProductBidStatus.CANCELLED -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.CANCELLED))
+            ProductBidStatus.CLOSED -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.CLOSED))
+            else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_STATUS)
         }
 
         val totalCount = jpaQueryFactory
             .select(qProductBuyBid.id.countDistinct())
             .from(qProductBuyBid)
+            .join(qProduct).on(qProductBuyBid.product.id.eq(qProduct.id))
             .join(qUser).on(qProductBuyBid.user.id.eq(qUser.id))
             .where(whereBuilder.value)
             .fetchOne() ?: 0
 
         val productBids = jpaQueryFactory
-            .select(
-                Projections.constructor(
-                    ProductBidDto::class.java,
-                    qProductBuyBid.price,
-                    qProductBuyBid.stock,
-                    qProductBuyBid.createdTime,
-                    qProductBuyBid.user.id.eq(query.userId)
-                )
-            )
+            .select(qProductBuyBid)
             .from(qProductBuyBid)
-            .join(qUser).on(qProductBuyBid.user.id.eq(qUser.id))
+            .join(qProduct).on(qProductBuyBid.product.id.eq(qProduct.id)).fetchJoin()
+            .join(qUser).on(qProductBuyBid.user.id.eq(qUser.id)).fetchJoin()
             .where(whereBuilder.value)
             .orderBy(*orderBuilder.toTypedArray())
             .offset(((query.page - 1) * query.size).toLong())
@@ -349,49 +347,45 @@ class ProductPersistenceAdapter(
         )
     }
 
-    override fun findProductSellBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>> {
+    override fun findProductSellBids(query: FindProductBidHistoryQuery): Pageable<List<ProductSellBid>> {
         val qUser = QUser.user
+        val qProduct = QProduct.product
         val qProductSellBid = QProductSellBid.productSellBid
 
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
 
-        val sort = Order.valueOf(query.sort.uppercase())
+        val sort = Order.valueOf(query.sort.name)
 
         when (query.order) {
-            "createdTime" -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
-            "price" -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.price))
-            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.stock))
+            ProductBidOrderBy.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
+            ProductBidOrderBy.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.price))
+            ProductBidOrderBy.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.stock))
         }
 
         whereBuilder.and(qProductSellBid.product.id.eq(query.productId))
 
         when (query.status) {
-            "bidding" -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.BIDDING))
-            "dealt" -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.DEALT))
-            "cancelled" -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.CANCELLED))
-            "closed" -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.CLOSED))
+            ProductBidStatus.BIDDING -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.BIDDING))
+            ProductBidStatus.DEALT -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.DEALT))
+            ProductBidStatus.CANCELLED -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.CANCELLED))
+            ProductBidStatus.CLOSED -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.CLOSED))
+            else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_STATUS)
         }
 
         val totalCount = jpaQueryFactory
             .select(qProductSellBid.id.countDistinct())
             .from(qProductSellBid)
+            .join(qProduct).on(qProductSellBid.product.id.eq(qProduct.id))
             .join(qUser).on(qProductSellBid.user.id.eq(qUser.id))
             .where(whereBuilder.value)
             .fetchOne() ?: 0
 
         val productBids = jpaQueryFactory
-            .select(
-                Projections.constructor(
-                    ProductBidDto::class.java,
-                    qProductSellBid.price,
-                    qProductSellBid.stock,
-                    qProductSellBid.createdTime,
-                    qProductSellBid.user.id.eq(query.userId)
-                )
-            )
+            .select(qProductSellBid)
             .from(qProductSellBid)
-            .join(qUser).on(qProductSellBid.user.id.eq(qUser.id))
+            .join(qProduct).on(qProductSellBid.product.id.eq(qProduct.id)).fetchJoin()
+            .join(qUser).on(qProductSellBid.user.id.eq(qUser.id)).fetchJoin()
             .where(whereBuilder.value)
             .orderBy(*orderBuilder.toTypedArray())
             .offset(((query.page - 1) * query.size).toLong())
@@ -408,7 +402,7 @@ class ProductPersistenceAdapter(
         )
     }
 
-    override fun findProductDealBids(query: FindProductBidsQuery): Pageable<List<ProductBidDto>> {
+    override fun findProductDealBids(query: FindProductBidHistoryQuery): Pageable<List<ProductDealBid>> {
         val qProductBuyBid = QProductBuyBid.productBuyBid
         val qBuyer = QUser("qBuyer")
         val qProductSellBid = QProductSellBid.productSellBid
@@ -418,61 +412,55 @@ class ProductPersistenceAdapter(
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
 
-        val sort = Order.valueOf(query.sort.uppercase())
+        val sort = Order.valueOf(query.sort.name)
 
         when (query.order) {
-            "createdTime" -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.createdTime))
-            "price" -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.price))
-            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.quantity))
+            ProductBidOrderBy.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.createdTime))
+            ProductBidOrderBy.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.price))
+            ProductBidOrderBy.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.quantity))
         }
 
         whereBuilder.and(qProductDealBid.product.id.eq(query.productId))
 
         when (query.status) {
-            "bidding" -> whereBuilder.and(
+            ProductBidStatus.BIDDING -> whereBuilder.and(
                 qProductBuyBid.status.eq(ProductBidStatus.BIDDING)
                     .or(qProductSellBid.status.eq(ProductBidStatus.BIDDING))
             )
 
-            "dealt" -> whereBuilder.and(
+            ProductBidStatus.DEALT -> whereBuilder.and(
                 qProductBuyBid.status.eq(ProductBidStatus.DEALT).or(qProductSellBid.status.eq(ProductBidStatus.DEALT))
             )
 
-            "cancelled" -> whereBuilder.and(
+            ProductBidStatus.CANCELLED -> whereBuilder.and(
                 qProductBuyBid.status.eq(ProductBidStatus.CANCELLED)
                     .or(qProductSellBid.status.eq(ProductBidStatus.CANCELLED))
             )
 
-            "closed" -> whereBuilder.and(
+            ProductBidStatus.CLOSED -> whereBuilder.and(
                 qProductBuyBid.status.eq(ProductBidStatus.CLOSED).or(qProductSellBid.status.eq(ProductBidStatus.CLOSED))
             )
+
+            else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_STATUS)
         }
 
         val totalCount = jpaQueryFactory
             .select(qProductDealBid.id.countDistinct())
             .from(qProductDealBid)
-            .join(qProductBuyBid).on(qProductDealBid.buyBid.id.eq(qProductBuyBid.id))
-            .join(qBuyer).on(qProductBuyBid.user.id.eq(qBuyer.id))
-            .join(qProductSellBid).on(qProductDealBid.sellBid.id.eq(qProductSellBid.id))
-            .join(qSeller).on(qProductSellBid.user.id.eq(qSeller.id))
+            .join(qProductDealBid.buyBid, qProductBuyBid)
+            .join(qProductDealBid.buyBid.user, qBuyer)
+            .join(qProductDealBid.sellBid, qProductSellBid)
+            .join(qProductDealBid.sellBid.user, qSeller)
             .where(whereBuilder.value)
             .fetchOne() ?: 0
 
         val productBids = jpaQueryFactory
-            .select(
-                Projections.constructor(
-                    ProductBidDto::class.java,
-                    qProductDealBid.price,
-                    qProductDealBid.quantity,
-                    qProductDealBid.createdTime,
-                    qProductDealBid.buyBid.user.id.eq(query.userId).or(qProductDealBid.sellBid.user.id.eq(query.userId))
-                )
-            )
+            .select(qProductDealBid)
             .from(qProductDealBid)
-            .join(qProductBuyBid).on(qProductDealBid.buyBid.id.eq(qProductBuyBid.id))
-            .join(qBuyer).on(qProductBuyBid.user.id.eq(qBuyer.id))
-            .join(qProductSellBid).on(qProductDealBid.sellBid.id.eq(qProductSellBid.id))
-            .join(qSeller).on(qProductSellBid.user.id.eq(qSeller.id))
+            .join(qProductDealBid.buyBid, qProductBuyBid).fetchJoin()
+            .join(qProductDealBid.buyBid.user, qBuyer).fetchJoin()
+            .join(qProductDealBid.sellBid, qProductSellBid).fetchJoin()
+            .join(qProductDealBid.sellBid.user, qSeller).fetchJoin()
             .where(whereBuilder.value)
             .orderBy(*orderBuilder.toTypedArray())
             .offset(((query.page - 1) * query.size).toLong())
@@ -489,7 +477,10 @@ class ProductPersistenceAdapter(
         )
     }
 
-    override fun findProductDealsByProductIdAfterDateTime(productId: Long, dateTime: LocalDateTime): List<ProductDealBid> {
+    override fun findProductDealsByProductIdAfterDateTime(
+        productId: Long,
+        dateTime: LocalDateTime
+    ): List<ProductDealBid> {
         return productDealJpaRepository.findAllByProductIdAndCreatedTimeAfter(productId, dateTime)
     }
 }

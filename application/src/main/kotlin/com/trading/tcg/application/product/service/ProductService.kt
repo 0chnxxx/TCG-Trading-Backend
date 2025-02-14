@@ -1,20 +1,22 @@
 package com.trading.tcg.application.product.service
 
 import com.trading.tcg.application.product.dto.request.FindProductBidTrendQuery
-import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
+import com.trading.tcg.application.product.dto.request.FindProductBidHistoryQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
 import com.trading.tcg.application.product.dto.response.*
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
+import com.trading.tcg.global.dto.Pageable
+import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.dto.Response
 import com.trading.tcg.global.exception.CustomException
+import com.trading.tcg.product.domain.ProductBidType
 import com.trading.tcg.product.exception.ProductErrorCode
 import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import kotlin.math.min
 
 @Service
 @RequiredArgsConstructor
@@ -71,11 +73,32 @@ class ProductService(
     }
 
     @Transactional(readOnly = true)
-    override fun findProductBids(query: FindProductBidsQuery): Response<List<ProductBidDto>> {
+    override fun findProductBidHistories(provider: Provider, query: FindProductBidHistoryQuery): Response<List<ProductBidHistoryDto>> {
         val productBids = when (query.type) {
-            "buy" -> productPersistencePort.findProductBuyBids(query)
-            "sell" -> productPersistencePort.findProductSellBids(query)
-            "deal" -> productPersistencePort.findProductDealBids(query)
+            ProductBidType.BUY -> {
+                val productBuyBids = productPersistencePort.findProductBuyBids(query)
+
+                Pageable(
+                    pageResult = productBuyBids.pageResult,
+                    data = productBuyBids.data.map { ProductBidHistoryDto.ofBuy(provider, it) }
+                )
+            }
+            ProductBidType.SELL -> {
+                val productSellBids = productPersistencePort.findProductSellBids(query)
+
+                Pageable(
+                    pageResult = productSellBids.pageResult,
+                    data = productSellBids.data.map { ProductBidHistoryDto.ofSell(provider, it) }
+                )
+            }
+            ProductBidType.DEAL -> {
+                val productDealBids = productPersistencePort.findProductDealBids(query)
+
+                Pageable(
+                    pageResult = productDealBids.pageResult,
+                    data = productDealBids.data.map { ProductBidHistoryDto.ofDeal(provider, it) }
+                )
+            }
             else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_TYPE)
         }
 
@@ -86,7 +109,7 @@ class ProductService(
     }
 
     @Transactional(readOnly = true)
-    override fun findProductBidTrend(query: FindProductBidTrendQuery): Response<ProductBidTrendDto> {
+    override fun findProductPriceTrend(query: FindProductBidTrendQuery): Response<ProductPriceTrendDto> {
         val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
         val productDeals = productPersistencePort.findProductDealsByProductIdAfterDateTime(query.productId, sixMonthsAgo)
 
@@ -100,14 +123,14 @@ class ProductService(
             .map { chunk -> chunk.map { it.price.toDouble() }.average() }
             .map { averagePrice -> averagePrice.toLong() }
 
-        val productBidTrendDto = ProductBidTrendDto(
+        val productPriceTrendDto = ProductPriceTrendDto(
             prices = averagePrices,
             minPrice = averagePrices.minOrNull(),
             maxPrice = averagePrices.maxOrNull()
         )
 
         return Response.of(
-            data = productBidTrendDto
+            data = productPriceTrendDto
         )
     }
 }

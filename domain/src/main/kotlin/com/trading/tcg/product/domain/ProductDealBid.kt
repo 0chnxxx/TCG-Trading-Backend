@@ -22,12 +22,11 @@ class ProductDealBid(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sell_bid_id", nullable = false)
-    val sellBid: ProductBuyBid,
+    val sellBid: ProductSellBid,
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     val price: BigDecimal,
 
     @Column(name = "quantity", nullable = false)
     val quantity: Int
-): Base() {
-}
+): Base()

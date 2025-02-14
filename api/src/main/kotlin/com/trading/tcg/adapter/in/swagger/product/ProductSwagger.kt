@@ -1,7 +1,7 @@
 package com.trading.tcg.adapter.`in`.swagger.product
 
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidTrendRequest
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidsRequest
+import com.trading.tcg.adapter.`in`.api.product.dto.FindProductPriceTrendRequest
+import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidHistoryRequest
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductRequest
 import com.trading.tcg.adapter.`in`.api.product.dto.FindProductsRequest
 import com.trading.tcg.application.product.dto.response.*
@@ -31,14 +31,14 @@ interface ProductSwagger {
     ): ResponseEntity<Response<ProductDetailDto>>
 
     @Operation(summary = "상품 입찰 리스트 조회", description = "상품 입찰 리스트를 조회한다.")
-    fun findProductBids(
+    fun findProductBidHistories(
         provider: Provider,
-        request: FindProductBidsRequest
-    ): ResponseEntity<Response<List<ProductBidDto>>>
+        request: FindProductBidHistoryRequest
+    ): ResponseEntity<Response<List<ProductBidHistoryDto>>>
 
     @Operation(summary = "상품 입찰 시세 조회", description = "상품 입찰 시세를 조회한다.")
-    fun findProductBidTrend(
+    fun findProductPriceTrend(
         provider: Provider,
-        request: FindProductBidTrendRequest
-    ): ResponseEntity<Response<ProductBidTrendDto>>
+        request: FindProductPriceTrendRequest
+    ): ResponseEntity<Response<ProductPriceTrendDto>>
 }

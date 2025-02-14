@@ -5,9 +5,6 @@ import com.trading.tcg.product.exception.ProductErrorCode
 import com.trading.tcg.user.exception.UserErrorCode
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
-import org.springframework.core.type.filter.AssignableTypeFilter
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
@@ -19,7 +16,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 @RestControllerAdvice
 class GlobalExceptionHandler {
     val errorCodes = arrayOf(
-        ApplicationErrorCode::class.java,
+        ServiceErrorCode::class.java,
         UserErrorCode::class.java,
         ProductErrorCode::class.java
     ).flatMap { it.enumConstants.asIterable() }.map { it as ErrorCode }
@@ -53,7 +50,7 @@ class GlobalExceptionHandler {
         e: NoResourceFoundException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode = ApplicationErrorCode.NOT_FOUND
+        val errorCode = ServiceErrorCode.NOT_FOUND
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
@@ -69,7 +66,7 @@ class GlobalExceptionHandler {
         e: AccessDeniedException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode = ApplicationErrorCode.FORBIDDEN
+        val errorCode = ServiceErrorCode.FORBIDDEN
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,

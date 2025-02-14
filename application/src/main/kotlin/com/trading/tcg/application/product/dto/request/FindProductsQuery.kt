@@ -1,10 +1,14 @@
 package com.trading.tcg.application.product.dto.request
 
+import com.trading.tcg.global.domain.SortBy
+import com.trading.tcg.product.domain.ProductOrderBy
+import com.trading.tcg.product.domain.ProductTab
+
 data class FindProductsQuery(
     val userId: Long,
-    val order: String,
-    val sort: String,
-    val tab: String?,
+    val order: ProductOrderBy,
+    val sort: SortBy,
+    val tab: ProductTab?,
     val rank: List<String>,
     val category: List<String>,
     val type: List<String>,

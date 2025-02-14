@@ -1,16 +1,17 @@
 package com.trading.tcg.application.product.port.`in`
 
 import com.trading.tcg.application.product.dto.request.FindProductBidTrendQuery
-import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
+import com.trading.tcg.application.product.dto.request.FindProductBidHistoryQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
 import com.trading.tcg.application.product.dto.response.*
+import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.dto.Response
 
 interface ProductUseCase {
     fun findProductCatalog(): Response<ProductCatalogDto>
     fun findProducts(query: FindProductsQuery): Response<List<ProductDto>>
     fun findProduct(query: FindProductQuery): Response<ProductDetailDto>
-    fun findProductBids(query: FindProductBidsQuery): Response<List<ProductBidDto>>
-    fun findProductBidTrend(query: FindProductBidTrendQuery): Response<ProductBidTrendDto>
+    fun findProductBidHistories(provider: Provider, query: FindProductBidHistoryQuery): Response<List<ProductBidHistoryDto>>
+    fun findProductPriceTrend(query: FindProductBidTrendQuery): Response<ProductPriceTrendDto>
 }

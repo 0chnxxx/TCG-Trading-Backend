@@ -3,10 +3,7 @@ package com.trading.tcg.global.security
 import com.trading.tcg.application.user.port.out.UserPersistencePort
 import com.trading.tcg.global.dto.HttpProvider
 import com.trading.tcg.global.exception.CustomException
-import com.trading.tcg.global.exception.ApplicationErrorCode
-import com.trading.tcg.global.jwt.service.JwtTokenValidator
 import com.trading.tcg.user.exception.UserErrorCode
-import jakarta.servlet.http.HttpServletRequest
 import lombok.RequiredArgsConstructor
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService

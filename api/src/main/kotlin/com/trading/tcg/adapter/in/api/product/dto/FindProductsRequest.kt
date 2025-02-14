@@ -1,19 +1,19 @@
 package com.trading.tcg.adapter.`in`.api.product.dto
 
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
+import com.trading.tcg.global.domain.SortBy
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.validation.SelfValidator
+import com.trading.tcg.product.domain.ProductOrderBy
+import com.trading.tcg.product.domain.ProductTab
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.Pattern
 
 data class FindProductsRequest(
-    @field:Pattern(regexp = "^(bidPlacedTime|bidClosedTime|bidCount|dealCount|price)", message = "유효한 정렬 대상이 아닙니다.")
     val order: String?,
 
-    @field:Pattern(regexp = "^(asc|desc)", message = "유효한 정렬 방식이 아닙니다.")
     val sort: String?,
 
-    @field:Pattern(regexp = "^(pokemon|yugioh|digimon)", message = "유효한 탭이 아닙니다.")
     val tab: String?,
 
     val rank: List<String>?,
@@ -49,9 +49,9 @@ data class FindProductsRequest(
 
         return FindProductsQuery(
             userId = provider.getUser()?.id ?: 0,
-            order = order ?: "bidPlacedTime",
-            sort = sort ?: "desc",
-            tab = tab,
+            order = order?.let { ProductOrderBy.ofQuery(it) } ?: ProductOrderBy.BID_PLACED_TIME,
+            sort = sort?.let { SortBy.ofQuery(it) } ?: SortBy.DESC,
+            tab = tab.let { ProductTab.ofQuery(tab!!) },
             rank = rank ?: emptyList(),
             category = category ?: emptyList(),
             type = type ?: emptyList(),

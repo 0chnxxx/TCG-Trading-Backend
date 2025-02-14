@@ -5,7 +5,7 @@ import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.validation.SelfValidator
 import org.springframework.web.bind.annotation.PathVariable
 
-data class FindProductBidTrendRequest(
+data class FindProductPriceTrendRequest(
     @PathVariable
     val productId: Long
 ): SelfValidator() {

@@ -3,8 +3,8 @@ package com.trading.tcg.global.dto
 import kotlin.math.ceil
 
 data class Pageable<T>(
-    val data: T,
-    val pageResult: PageResult
+    val pageResult: PageResult,
+    val data: T
 ) {
     data class PageResult(
         val page: Int,
