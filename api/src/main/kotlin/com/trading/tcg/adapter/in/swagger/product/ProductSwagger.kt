@@ -1,9 +1,6 @@
 package com.trading.tcg.adapter.`in`.swagger.product
 
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductPriceTrendRequest
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidHistoryRequest
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductRequest
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductsRequest
+import com.trading.tcg.adapter.`in`.api.product.dto.*
 import com.trading.tcg.application.product.dto.response.*
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.dto.Response
@@ -18,19 +15,19 @@ interface ProductSwagger {
         provider: Provider
     ): ResponseEntity<Response<ProductCatalogDto>>
 
-    @Operation(summary = "상품 리스트 조회", description = "상품 리스트를 조회한다.")
+    @Operation(summary = "상품 목록 조회", description = "상품 목록을 조회한다.")
     fun findProducts(
         provider: Provider,
         request: FindProductsRequest
     ): ResponseEntity<Response<List<ProductDto>>>
 
-    @Operation(summary = "상품 디테일 조회", description = "상품 디테일을 조회한다.")
+    @Operation(summary = "상품 세부사항 조회", description = "상품 세부사항을 조회한다.")
     fun findProduct(
         provider: Provider,
         request: FindProductRequest
     ): ResponseEntity<Response<ProductDetailDto>>
 
-    @Operation(summary = "상품 입찰 리스트 조회", description = "상품 입찰 리스트를 조회한다.")
+    @Operation(summary = "상품 입찰 내역 조회", description = "상품 입찰 내역을 조회한다.")
     fun findProductBidHistories(
         provider: Provider,
         request: FindProductBidHistoryRequest
@@ -41,4 +38,10 @@ interface ProductSwagger {
         provider: Provider,
         request: FindProductPriceTrendRequest
     ): ResponseEntity<Response<ProductPriceTrendDto>>
+
+    @Operation(summary = "상품 북마크 상태 변경", description = "상품 북마크 상태를 토글로 변경한다.")
+    fun updateProductBookmark(
+        provider: Provider,
+        request: UpdateProductBookmarkRequest
+    ): ResponseEntity<Unit>
 }

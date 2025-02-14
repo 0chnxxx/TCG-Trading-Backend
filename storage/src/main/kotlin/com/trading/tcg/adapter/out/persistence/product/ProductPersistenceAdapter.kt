@@ -22,15 +22,23 @@ import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.product.domain.*
 import com.trading.tcg.product.exception.ProductErrorCode
 import com.trading.tcg.user.domain.QUser
+import com.trading.tcg.user.domain.User
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
+import java.util.*
 
 @Repository
 class ProductPersistenceAdapter(
     private val jpaQueryFactory: JPAQueryFactory,
+    private val productJpaRepository: ProductJpaRepository,
     private val productCategoryJpaRepository: ProductCategoryJpaRepository,
-    private val productDealJpaRepository: ProductDealJpaRepository
+    private val productDealJpaRepository: ProductDealJpaRepository,
+    private val productBookmarkJpaRepository: ProductBookmarkJpaRepository
 ): ProductPersistencePort {
+    override fun findById(id: Long): Optional<Product> {
+        return productJpaRepository.findById(id)
+    }
+
     override fun findProductDtos(query: FindProductsQuery): Pageable<List<ProductDto>> {
         val qUser = QUser.user
         val qProduct = QProduct.product
@@ -482,5 +490,17 @@ class ProductPersistenceAdapter(
         dateTime: LocalDateTime
     ): List<ProductDealBid> {
         return productDealJpaRepository.findAllByProductIdAndCreatedTimeAfter(productId, dateTime)
+    }
+
+    override fun findProductBookmark(id: ProductBookmark.ProductBookmarkId): Optional<ProductBookmark> {
+        return productBookmarkJpaRepository.findById(id)
+    }
+
+    override fun saveProductBookmark(productBookmark: ProductBookmark) {
+        productBookmarkJpaRepository.save(productBookmark)
+    }
+
+    override fun deleteProductBookmark(productBookmark: ProductBookmark) {
+        productBookmarkJpaRepository.delete(productBookmark)
     }
 }

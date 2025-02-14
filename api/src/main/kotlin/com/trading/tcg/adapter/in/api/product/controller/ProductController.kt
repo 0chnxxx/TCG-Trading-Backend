@@ -1,9 +1,6 @@
 package com.trading.tcg.adapter.`in`.api.product.controller
 
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductPriceTrendRequest
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductBidHistoryRequest
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductRequest
-import com.trading.tcg.adapter.`in`.api.product.dto.FindProductsRequest
+import com.trading.tcg.adapter.`in`.api.product.dto.*
 import com.trading.tcg.adapter.`in`.swagger.product.ProductSwagger
 import com.trading.tcg.application.product.dto.response.*
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
@@ -13,6 +10,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -61,5 +59,15 @@ class ProductController(
         request: FindProductPriceTrendRequest
     ): ResponseEntity<Response<ProductPriceTrendDto>> {
         return ResponseEntity(productUseCase.findProductPriceTrend(request.toQuery(provider)), HttpStatus.OK)
+    }
+
+    @PostMapping("/products/{productId}/bookmark")
+    override fun updateProductBookmark(
+        @AuthenticationPrincipal
+        provider: Provider,
+        request: UpdateProductBookmarkRequest
+    ): ResponseEntity<Unit> {
+        productUseCase.updateProductBookmark(request.toCommand(provider))
+        return ResponseEntity(HttpStatus.OK)
     }
 }

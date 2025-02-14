@@ -1,18 +1,18 @@
 package com.trading.tcg.application.product.service
 
-import com.trading.tcg.application.product.dto.request.FindProductBidTrendQuery
-import com.trading.tcg.application.product.dto.request.FindProductBidHistoryQuery
-import com.trading.tcg.application.product.dto.request.FindProductQuery
-import com.trading.tcg.application.product.dto.request.FindProductsQuery
+import com.trading.tcg.application.product.dto.request.*
 import com.trading.tcg.application.product.dto.response.*
 import com.trading.tcg.application.product.port.`in`.ProductUseCase
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
+import com.trading.tcg.application.user.port.out.UserPersistencePort
 import com.trading.tcg.global.dto.Pageable
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.dto.Response
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.product.domain.ProductBidType
+import com.trading.tcg.product.domain.ProductBookmark
 import com.trading.tcg.product.exception.ProductErrorCode
+import com.trading.tcg.user.exception.UserErrorCode
 import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,7 +21,8 @@ import java.time.LocalDateTime
 @Service
 @RequiredArgsConstructor
 class ProductService(
-    private val productPersistencePort: ProductPersistencePort
+    private val productPersistencePort: ProductPersistencePort,
+    private val userPersistencePort: UserPersistencePort
 ): ProductUseCase {
     @Transactional(readOnly = true)
     override fun findProductCatalog(): Response<ProductCatalogDto> {
@@ -132,5 +133,26 @@ class ProductService(
         return Response.of(
             data = productPriceTrendDto
         )
+    }
+
+    @Transactional
+    override fun updateProductBookmark(command: UpdateProductBookmarkCommand) {
+        val productBookmark = productPersistencePort.findProductBookmark(ProductBookmark.ProductBookmarkId(command.userId, command.productId))
+
+        if (productBookmark.isPresent) {
+            productPersistencePort.deleteProductBookmark(productBookmark.get())
+        } else {
+            val user = userPersistencePort.findById(command.userId)
+                .orElseThrow { CustomException(UserErrorCode.NOT_FOUND_USER) }
+            val product = productPersistencePort.findById(command.productId)
+                .orElseThrow { CustomException(ProductErrorCode.NOT_FOUND_PRODUCT) }
+
+            val newProductBookmark = ProductBookmark(
+                user = user,
+                product = product
+            )
+
+            productPersistencePort.saveProductBookmark(newProductBookmark)
+        }
     }
 }
