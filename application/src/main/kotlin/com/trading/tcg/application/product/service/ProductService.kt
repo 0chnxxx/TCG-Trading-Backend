@@ -13,6 +13,8 @@ import com.trading.tcg.product.exception.ProductErrorCode
 import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
+import kotlin.math.min
 
 @Service
 @RequiredArgsConstructor
@@ -85,10 +87,27 @@ class ProductService(
 
     @Transactional(readOnly = true)
     override fun findProductBidTrend(query: FindProductBidTrendQuery): Response<ProductBidTrendDto> {
-        val productBidTrend = productPersistencePort.findProductBidTrend(query)
+        val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
+        val productDeals = productPersistencePort.findProductDealsByProductIdAfterDateTime(query.productId, sixMonthsAgo)
+
+        val totalCount = productDeals.size
+        val maxBucketCount = 12
+        val minBucketCount = Math.min(totalCount, maxBucketCount)
+        val countPerBucket = (totalCount / minBucketCount).let { if (it == 0) 1 else it }
+
+        val averagePrices = productDeals
+            .chunked(countPerBucket)
+            .map { chunk -> chunk.map { it.price.toDouble() }.average() }
+            .map { averagePrice -> averagePrice.toLong() }
+
+        val productBidTrendDto = ProductBidTrendDto(
+            prices = averagePrices,
+            minPrice = averagePrices.minOrNull(),
+            maxPrice = averagePrices.maxOrNull()
+        )
 
         return Response.of(
-            data = productBidTrend
+            data = productBidTrendDto
         )
     }
 }

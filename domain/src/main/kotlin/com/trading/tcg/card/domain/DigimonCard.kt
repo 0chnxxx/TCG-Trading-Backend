@@ -14,7 +14,7 @@ class DigimonCard(
 
     dealCount: Int,
 
-    deals: List<ProductDeal>,
+    deals: List<ProductDealBid>,
 
     directBuyPrice: BigDecimal?,
 

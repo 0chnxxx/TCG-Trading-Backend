@@ -10,7 +10,6 @@ import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.trading.tcg.adapter.out.persistence.global.util.ExpressionUtil
-import com.trading.tcg.application.product.dto.request.FindProductBidTrendQuery
 import com.trading.tcg.application.product.dto.request.FindProductBidsQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
@@ -26,7 +25,8 @@ import java.time.LocalDateTime
 @Repository
 class ProductPersistenceAdapter(
     private val jpaQueryFactory: JPAQueryFactory,
-    private val productCategoryJpaRepository: ProductCategoryJpaRepository
+    private val productCategoryJpaRepository: ProductCategoryJpaRepository,
+    private val productDealJpaRepository: ProductDealJpaRepository
 ): ProductPersistencePort {
     override fun findProductDtos(query: FindProductsQuery): Pageable<List<ProductDto>> {
         val qUser = QUser.user
@@ -267,9 +267,9 @@ class ProductPersistenceAdapter(
                             .`when`(qPokemonCard.id.isNotNull).then(Expressions.nullExpression())
                             .otherwise(Expressions.nullExpression()),
                         qProductBuyBid.price,
-                        qProductBuyBid.remainingQuantity,
+                        qProductBuyBid.stock,
                         qProductSellBid.price,
-                        qProductSellBid.remainingQuantity,
+                        qProductSellBid.stock,
                         qProduct.id.`in`(
                             ExpressionUtils.list(
                                 Long::class.java,
@@ -302,7 +302,7 @@ class ProductPersistenceAdapter(
         when (query.order) {
             "createdTime" -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
             "price" -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.price))
-            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.remainingQuantity))
+            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.stock))
         }
 
         whereBuilder.and(qProductBuyBid.product.id.eq(query.productId))
@@ -326,7 +326,7 @@ class ProductPersistenceAdapter(
                 Projections.constructor(
                     ProductBidDto::class.java,
                     qProductBuyBid.price,
-                    qProductBuyBid.remainingQuantity,
+                    qProductBuyBid.stock,
                     qProductBuyBid.createdTime,
                     qProductBuyBid.user.id.eq(query.userId)
                 )
@@ -361,7 +361,7 @@ class ProductPersistenceAdapter(
         when (query.order) {
             "createdTime" -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
             "price" -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.price))
-            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.remainingQuantity))
+            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.stock))
         }
 
         whereBuilder.and(qProductSellBid.product.id.eq(query.productId))
@@ -385,7 +385,7 @@ class ProductPersistenceAdapter(
                 Projections.constructor(
                     ProductBidDto::class.java,
                     qProductSellBid.price,
-                    qProductSellBid.remainingQuantity,
+                    qProductSellBid.stock,
                     qProductSellBid.createdTime,
                     qProductSellBid.user.id.eq(query.userId)
                 )
@@ -413,7 +413,7 @@ class ProductPersistenceAdapter(
         val qBuyer = QUser("qBuyer")
         val qProductSellBid = QProductSellBid.productSellBid
         val qSeller = QUser("qSeller")
-        val qProductDeal = QProductDeal.productDeal
+        val qProductDealBid = QProductDealBid.productDealBid
 
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
@@ -421,12 +421,12 @@ class ProductPersistenceAdapter(
         val sort = Order.valueOf(query.sort.uppercase())
 
         when (query.order) {
-            "createdTime" -> orderBuilder.add(OrderSpecifier(sort, qProductDeal.createdTime))
-            "price" -> orderBuilder.add(OrderSpecifier(sort, qProductDeal.price))
-            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductDeal.quantity))
+            "createdTime" -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.createdTime))
+            "price" -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.price))
+            "quantity" -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.quantity))
         }
 
-        whereBuilder.and(qProductDeal.product.id.eq(query.productId))
+        whereBuilder.and(qProductDealBid.product.id.eq(query.productId))
 
         when (query.status) {
             "bidding" -> whereBuilder.and(
@@ -449,11 +449,11 @@ class ProductPersistenceAdapter(
         }
 
         val totalCount = jpaQueryFactory
-            .select(qProductDeal.id.countDistinct())
-            .from(qProductDeal)
-            .join(qProductBuyBid).on(qProductDeal.buyBid.id.eq(qProductBuyBid.id))
+            .select(qProductDealBid.id.countDistinct())
+            .from(qProductDealBid)
+            .join(qProductBuyBid).on(qProductDealBid.buyBid.id.eq(qProductBuyBid.id))
             .join(qBuyer).on(qProductBuyBid.user.id.eq(qBuyer.id))
-            .join(qProductSellBid).on(qProductDeal.sellBid.id.eq(qProductSellBid.id))
+            .join(qProductSellBid).on(qProductDealBid.sellBid.id.eq(qProductSellBid.id))
             .join(qSeller).on(qProductSellBid.user.id.eq(qSeller.id))
             .where(whereBuilder.value)
             .fetchOne() ?: 0
@@ -462,16 +462,16 @@ class ProductPersistenceAdapter(
             .select(
                 Projections.constructor(
                     ProductBidDto::class.java,
-                    qProductDeal.price,
-                    qProductDeal.quantity,
-                    qProductDeal.createdTime,
-                    qProductDeal.buyBid.user.id.eq(query.userId).or(qProductDeal.sellBid.user.id.eq(query.userId))
+                    qProductDealBid.price,
+                    qProductDealBid.quantity,
+                    qProductDealBid.createdTime,
+                    qProductDealBid.buyBid.user.id.eq(query.userId).or(qProductDealBid.sellBid.user.id.eq(query.userId))
                 )
             )
-            .from(qProductDeal)
-            .join(qProductBuyBid).on(qProductDeal.buyBid.id.eq(qProductBuyBid.id))
+            .from(qProductDealBid)
+            .join(qProductBuyBid).on(qProductDealBid.buyBid.id.eq(qProductBuyBid.id))
             .join(qBuyer).on(qProductBuyBid.user.id.eq(qBuyer.id))
-            .join(qProductSellBid).on(qProductDeal.sellBid.id.eq(qProductSellBid.id))
+            .join(qProductSellBid).on(qProductDealBid.sellBid.id.eq(qProductSellBid.id))
             .join(qSeller).on(qProductSellBid.user.id.eq(qSeller.id))
             .where(whereBuilder.value)
             .orderBy(*orderBuilder.toTypedArray())
@@ -489,49 +489,7 @@ class ProductPersistenceAdapter(
         )
     }
 
-    override fun findProductBidTrend(query: FindProductBidTrendQuery): ProductBidTrendDto {
-        val qProductDeal = QProductDeal.productDeal
-
-        val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
-
-        val totalCount = jpaQueryFactory
-            .select(qProductDeal.id.count())
-            .from(qProductDeal)
-            .where(
-                qProductDeal.product.id.eq(query.productId)
-                    .and(qProductDeal.createdTime.after(sixMonthsAgo))
-            )
-            .fetchOne() ?: 0
-
-        val maxBucketCount = 12L
-        val minBucketCount = Math.min(totalCount, maxBucketCount)
-        val itemsPerBucket = (totalCount / minBucketCount).let { if (it == 0L) 1L else it }
-
-        val bucketExpression = Expressions.numberTemplate(
-            Long::class.java,
-            "FLOOR(TIMESTAMPDIFF(SECOND, {0}, {1}) / {2})",
-            Expressions.constant(sixMonthsAgo),
-            qProductDeal.createdTime,
-            itemsPerBucket
-        )
-
-        val data = jpaQueryFactory
-            .select(
-                qProductDeal.price.avg().longValue()
-            )
-            .from(qProductDeal)
-            .where(
-                qProductDeal.product.id.eq(query.productId)
-                    .and(qProductDeal.createdTime.after(sixMonthsAgo))
-            )
-            .groupBy(bucketExpression)
-            .orderBy(bucketExpression.asc())
-            .fetch()
-
-        return ProductBidTrendDto(
-            prices = data,
-            minPrice = data.min(),
-            maxPrice = data.max()
-        )
+    override fun findProductDealsByProductIdAfterDateTime(productId: Long, dateTime: LocalDateTime): List<ProductDealBid> {
+        return productDealJpaRepository.findAllByProductIdAndCreatedTimeAfter(productId, dateTime)
     }
 }

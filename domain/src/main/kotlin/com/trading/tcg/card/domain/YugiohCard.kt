@@ -14,7 +14,7 @@ class YugiohCard(
 
     dealCount: Int,
 
-    deals: List<ProductDeal>,
+    deals: List<ProductDealBid>,
 
     directBuyPrice: BigDecimal?,
 

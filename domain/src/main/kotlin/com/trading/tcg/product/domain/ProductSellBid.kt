@@ -29,11 +29,11 @@ class ProductSellBid(
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     val price: BigDecimal,
 
-    @Column(name = "total_quantity", nullable = false)
-    val totalQuantity: Int,
+    @Column(name = "quantity", nullable = false)
+    val quantity: Int,
 
-    @Column(name = "remaining_quantity", nullable = false)
-    val remainingQuantity: Int,
+    @Column(name = "stock", nullable = false)
+    val stock: Int,
 
     @Column(name = "closed_time", nullable = false)
     val closedTime: LocalDateTime

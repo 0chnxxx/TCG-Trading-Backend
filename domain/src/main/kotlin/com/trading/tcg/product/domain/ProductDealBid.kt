@@ -5,8 +5,8 @@ import jakarta.persistence.*
 import java.math.BigDecimal
 
 @Entity
-@Table(name = "product_deal")
-class ProductDeal(
+@Table(name = "product_deal_bid")
+class ProductDealBid(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

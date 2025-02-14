@@ -14,7 +14,7 @@ abstract class Product(
     val id: Long? = null,
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    val deals: List<ProductDeal>,
+    val deals: List<ProductDealBid>,
 
     @Column(name = "recent_deal_price", precision = 10, scale = 2)
     val recentDealPrice: BigDecimal?,
