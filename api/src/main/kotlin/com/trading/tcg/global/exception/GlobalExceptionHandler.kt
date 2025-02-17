@@ -8,6 +8,7 @@ import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -16,7 +17,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException
 @RestControllerAdvice
 class GlobalExceptionHandler {
     val errorCodes = arrayOf(
-        ServiceErrorCode::class.java,
+        RequestErrorCode::class.java,
+        GlobalErrorCode::class.java,
         UserErrorCode::class.java,
         ProductErrorCode::class.java
     ).flatMap { it.enumConstants.asIterable() }.map { it as ErrorCode }
@@ -50,7 +52,23 @@ class GlobalExceptionHandler {
         e: NoResourceFoundException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode = ServiceErrorCode.NOT_FOUND
+        val errorCode = RequestErrorCode.NOT_FOUND_API
+
+        val errorResponse = ErrorResponse.of(
+            path = request.requestURI,
+            errorCode = errorCode.errorCode,
+            errorMessage = errorCode.errorMessage
+        )
+
+        return ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.valueOf(errorCode.statusCode))
+    }
+
+    @ExceptionHandler(value = [AuthenticationException::class])
+    fun handleAuthenticationException(
+        e: AuthenticationException,
+        request: HttpServletRequest
+    ): ResponseEntity<ErrorResponse> {
+        val errorCode = RequestErrorCode.UNAUTHORIZED_REQUEST
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,
@@ -66,7 +84,7 @@ class GlobalExceptionHandler {
         e: AccessDeniedException,
         request: HttpServletRequest
     ): ResponseEntity<ErrorResponse> {
-        val errorCode = ServiceErrorCode.FORBIDDEN
+        val errorCode = RequestErrorCode.FORBIDDEN_REQUEST
 
         val errorResponse = ErrorResponse.of(
             path = request.requestURI,

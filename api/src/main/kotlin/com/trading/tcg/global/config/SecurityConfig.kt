@@ -2,7 +2,7 @@ package com.trading.tcg.global.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.trading.tcg.global.dto.ErrorResponse
-import com.trading.tcg.global.exception.ServiceErrorCode
+import com.trading.tcg.global.exception.RequestErrorCode
 import com.trading.tcg.global.security.CustomAnonymousAuthenticationFilter
 import com.trading.tcg.global.security.JwtAuthenticationFilter
 import jakarta.servlet.http.HttpServletRequest
@@ -87,7 +87,7 @@ class SecurityConfig(
 
     private val authenticationEntryPoint =
         AuthenticationEntryPoint { request: HttpServletRequest, response: HttpServletResponse, authenticationException: AuthenticationException? ->
-            val errorCode = ServiceErrorCode.UNAUTHORIZED
+            val errorCode = RequestErrorCode.UNAUTHORIZED_REQUEST
 
             val errorResponse = ErrorResponse.of(
                 path = request.requestURI,
@@ -104,7 +104,7 @@ class SecurityConfig(
 
     private val accessDeniedHandler =
         AccessDeniedHandler { request: HttpServletRequest, response: HttpServletResponse, accessDeniedException: AccessDeniedException? ->
-            val errorCode = ServiceErrorCode.FORBIDDEN
+            val errorCode = RequestErrorCode.FORBIDDEN_REQUEST
 
             val errorResponse = ErrorResponse.of(
                 path = request.requestURI,

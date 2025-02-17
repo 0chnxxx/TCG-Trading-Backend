@@ -3,50 +3,30 @@ package com.trading.tcg.adapter.`in`.api.product.dto
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
 import com.trading.tcg.global.domain.SortBy
 import com.trading.tcg.global.dto.Provider
-import com.trading.tcg.global.validation.SelfValidator
+import com.trading.tcg.global.exception.CustomException
+import com.trading.tcg.global.exception.RequestErrorCode
 import com.trading.tcg.product.domain.ProductOrderBy
 import com.trading.tcg.product.domain.ProductTab
-import jakarta.validation.constraints.Min
-import jakarta.validation.constraints.Pattern
 
 data class FindProductsRequest(
     val order: String?,
-
     val sort: String?,
-
     val tab: String?,
-
     val rank: List<String>?,
-
     val category: List<String>?,
-
     val type: List<String>?,
-
     val effect: List<String>?,
-
     val form: List<String>?,
-
     val species: List<String>?,
-
     val summonType: List<String>?,
-
     val regulationMark: List<String>?,
-
     val isBookmarked: Boolean?,
-
     val isExcludedNotBidProduct: Boolean?,
-
     val search: String?,
-
-    @field:Min(value = 1, message = "페이지 번호가 범위를 벗어났습니다.")
     val page: Int?,
-
-    @field:Min(value = 1, message = "페이지 크기가 범위를 벗어났습니다.")
     val size: Int?
-): SelfValidator() {
+) {
     fun toQuery(provider: Provider): FindProductsQuery {
-        validate()
-
         return FindProductsQuery(
             userId = provider.getUser()?.id ?: 0,
             order = order?.let { ProductOrderBy.ofQuery(it) } ?: ProductOrderBy.BID_PLACED_TIME,
@@ -63,8 +43,8 @@ data class FindProductsRequest(
             isBookmarked = isBookmarked,
             isExcludedNotBidProduct = isExcludedNotBidProduct,
             search = search,
-            page = page ?: 1,
-            size = size ?: 10
+            page = page?.also { if (it < 1) throw CustomException(RequestErrorCode.OUT_OF_PAGE) } ?: 1,
+            size = size?.also { if (it < 1) throw CustomException(RequestErrorCode.OUT_OF_SIZE) } ?: 10
         )
     }
 }

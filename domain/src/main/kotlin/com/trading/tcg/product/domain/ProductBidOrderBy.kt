@@ -1,7 +1,7 @@
 package com.trading.tcg.product.domain
 
 import com.trading.tcg.global.exception.CustomException
-import com.trading.tcg.global.exception.ServiceErrorCode
+import com.trading.tcg.product.exception.ProductErrorCode
 
 enum class ProductBidOrderBy(
     val queryName: String,
@@ -14,7 +14,7 @@ enum class ProductBidOrderBy(
     companion object {
         fun ofQuery(queryName: String): ProductBidOrderBy {
             return ProductBidOrderBy.entries.find { it.queryName.uppercase() == queryName.uppercase() }
-                ?: throw CustomException(ServiceErrorCode.INVALID_ORDER)
+                ?: throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_ORDER)
         }
     }
 }

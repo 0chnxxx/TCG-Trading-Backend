@@ -20,4 +20,13 @@ class User(
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     val role: UserRole
-): Base()
+): Base() {
+    companion object {
+        const val emailFormat = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$\n"
+        const val emailMinLength = 5
+        const val emailMaxLength = 50
+        const val passwordFormat = "^(?=.*[a-zA-Z])(?=.*[!@#\$%^*+=-])(?=.*[0-9]).{8,15}\$"
+        const val passwordMinLength = 8
+        const val passwordMaxLength = 20
+    }
+}

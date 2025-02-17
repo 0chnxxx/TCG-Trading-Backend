@@ -15,9 +15,6 @@ dependencies {
     implementation("org.springframework.security:spring-security-data")
     implementation("org.springframework.security:spring-security-test")
 
-    // Spring Validation
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-
     // Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$swaggerVersion")
 }
