@@ -25,13 +25,22 @@ class UserController(
     private val userUseCase: UserUseCase
 ): UserSwagger {
     @GetMapping("/users/me")
+    @PreAuthorize("authentication.principal.user.id != null")
     override fun findMe(
         @AuthenticationPrincipal
         provider: Provider
     ): ResponseEntity<Response<UserDto>> {
-        val query = FindUserQuery(provider.getUser()?.id ?: 0)
+        val query = FindUserQuery(
+            userId = provider.getUser()?.id ?: 0
+        )
+        val user = userUseCase.findMe(query)
 
-        return ResponseEntity(userUseCase.findMe(query), HttpStatus.CREATED)
+        val response = Response.of(
+            data = user
+        )
+
+
+        return ResponseEntity(response, HttpStatus.CREATED)
     }
 
     @PostMapping("/users/register")
@@ -39,7 +48,13 @@ class UserController(
         @RequestBody
         request: RegisterUserRequest
     ): ResponseEntity<Response<JwtToken>> {
-        return ResponseEntity(userUseCase.register(request.toCommand()), HttpStatus.CREATED)
+        val token = userUseCase.register(request.toCommand())
+
+        val response = Response.of(
+            data = token
+        )
+
+        return ResponseEntity(response, HttpStatus.CREATED)
     }
 
     @PostMapping("/users/login")
@@ -47,7 +62,13 @@ class UserController(
         @RequestBody
         request: LoginUserRequest
     ): ResponseEntity<Response<JwtToken>> {
-        return ResponseEntity(userUseCase.login(request.toCommand()), HttpStatus.OK)
+        val token = userUseCase.login(request.toCommand())
+
+        val response = Response.of(
+            data = token
+        )
+
+        return ResponseEntity(response, HttpStatus.OK)
     }
 
     @DeleteMapping("/users/{userId}")

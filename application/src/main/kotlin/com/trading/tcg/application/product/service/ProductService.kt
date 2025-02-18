@@ -7,7 +7,6 @@ import com.trading.tcg.application.product.port.out.ProductPersistencePort
 import com.trading.tcg.application.user.port.out.UserPersistencePort
 import com.trading.tcg.global.dto.Pageable
 import com.trading.tcg.global.dto.Provider
-import com.trading.tcg.global.dto.Response
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.product.domain.ProductBidType
 import com.trading.tcg.product.domain.ProductBookmark
@@ -25,7 +24,7 @@ class ProductService(
     private val userPersistencePort: UserPersistencePort
 ): ProductUseCase {
     @Transactional(readOnly = true)
-    override fun findProductCatalog(): Response<ProductCatalogDto> {
+    override fun findProductCatalog(): ProductCatalogDto {
         val productCategories = productPersistencePort.findProductCategoriesWithFilters()
 
         val productCatalog = ProductCatalogDto(
@@ -48,33 +47,26 @@ class ProductService(
                 }
         )
 
-        return Response.of(
-            data = productCatalog
-        )
+        return productCatalog
     }
 
     @Transactional(readOnly = true)
-    override fun findProducts(query: FindProductsQuery): Response<List<ProductDto>> {
+    override fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>> {
         val productDtos = productPersistencePort.findProductDtos(query)
 
-        return Response.of(
-            pageResult = productDtos.pageResult,
-            data = productDtos.data
-        )
+        return productDtos
     }
 
     @Transactional(readOnly = true)
-    override fun findProduct(query: FindProductQuery): Response<ProductDetailDto> {
+    override fun findProduct(query: FindProductQuery): ProductDetailDto {
         val productDto = productPersistencePort.findProductDto(query)
             ?: throw CustomException(ProductErrorCode.NOT_FOUND_PRODUCT)
 
-        return Response.of(
-            data = productDto
-        )
+        return productDto
     }
 
     @Transactional(readOnly = true)
-    override fun findProductBidHistories(provider: Provider, query: FindProductBidHistoryQuery): Response<List<ProductBidHistoryDto>> {
+    override fun findProductBidHistories(provider: Provider, query: FindProductBidHistoryQuery): Pageable<List<ProductBidHistoryDto>> {
         val productBids = when (query.type) {
             ProductBidType.BUY -> {
                 val productBuyBids = productPersistencePort.findProductBuyBids(query)
@@ -103,14 +95,11 @@ class ProductService(
             else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_TYPE)
         }
 
-        return Response.of(
-            pageResult = productBids.pageResult,
-            data = productBids.data
-        )
+        return productBids
     }
 
     @Transactional(readOnly = true)
-    override fun findProductPriceTrend(query: FindProductBidTrendQuery): Response<ProductPriceTrendDto> {
+    override fun findProductPriceTrend(query: FindProductBidTrendQuery): ProductPriceTrendDto {
         val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
         val productDeals = productPersistencePort.findProductDealsByProductIdAfterDateTime(query.productId, sixMonthsAgo)
 
@@ -130,9 +119,7 @@ class ProductService(
             maxPrice = averagePrices.maxOrNull()
         )
 
-        return Response.of(
-            data = productPriceTrendDto
-        )
+        return productPriceTrendDto
     }
 
     @Transactional

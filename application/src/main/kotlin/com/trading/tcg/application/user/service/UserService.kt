@@ -7,7 +7,6 @@ import com.trading.tcg.application.user.dto.request.RegisterUserCommand
 import com.trading.tcg.application.user.dto.response.UserDto
 import com.trading.tcg.application.user.port.`in`.UserUseCase
 import com.trading.tcg.application.user.port.out.UserPersistencePort
-import com.trading.tcg.global.dto.Response
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.jwt.dto.request.CreateTokenCommand
 import com.trading.tcg.global.jwt.dto.response.JwtToken
@@ -27,7 +26,7 @@ class UserService(
     private val jwtTokenProvider: JwtTokenProvider
 ): UserUseCase {
     @Transactional(readOnly = true)
-    override fun findMe(query: FindUserQuery): Response<UserDto> {
+    override fun findMe(query: FindUserQuery): UserDto {
         val user = userPersistencePort.findById(query.userId)
             .orElseThrow { CustomException(UserErrorCode.NOT_FOUND_USER) }
 
@@ -36,13 +35,11 @@ class UserService(
             email = user.email
         )
 
-        return Response.of(
-            data = userDto
-        )
+        return userDto
     }
 
     @Transactional
-    override fun register(command: RegisterUserCommand): Response<JwtToken> {
+    override fun register(command: RegisterUserCommand): JwtToken {
         val user = User(
             email = command.email,
             password = encodeToSha512(command.password),
@@ -60,13 +57,11 @@ class UserService(
 
         val token = jwtTokenProvider.createToken(createTokenCommand)
 
-        return Response.of(
-            data = token
-        )
+        return token
     }
 
     @Transactional
-    override fun login(command: LoginUserCommand): Response<JwtToken> {
+    override fun login(command: LoginUserCommand): JwtToken {
         val user = userPersistencePort.findByEmail(command.email)
             .orElseThrow { throw CustomException(UserErrorCode.NOT_MATCH_USER) }
 
@@ -80,9 +75,7 @@ class UserService(
 
         val token = jwtTokenProvider.createToken(createTokenCommand)
 
-        return Response.of(
-            data = token
-        )
+        return token
     }
 
     @Transactional

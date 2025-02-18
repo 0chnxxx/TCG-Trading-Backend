@@ -22,7 +22,13 @@ class ProductController(
         @AuthenticationPrincipal
         provider: Provider
     ): ResponseEntity<Response<ProductCatalogDto>> {
-        return ResponseEntity(productUseCase.findProductCatalog(), HttpStatus.OK)
+        val productCatalog = productUseCase.findProductCatalog()
+
+        val response = Response.of(
+            data = productCatalog
+        )
+
+        return ResponseEntity(response, HttpStatus.OK)
     }
 
     @GetMapping("/products")
@@ -31,7 +37,14 @@ class ProductController(
         provider: Provider,
         request: FindProductsRequest
     ): ResponseEntity<Response<List<ProductDto>>> {
-        return ResponseEntity(productUseCase.findProducts(request.toQuery(provider)), HttpStatus.OK)
+        val products = productUseCase.findProducts(request.toQuery(provider))
+
+        val response = Response.of(
+            pageResult = products.pageResult,
+            data = products.data
+        )
+
+        return ResponseEntity(response, HttpStatus.OK)
     }
 
     @GetMapping("/products/{productId}")
@@ -40,7 +53,13 @@ class ProductController(
         provider: Provider,
         request: FindProductRequest
     ): ResponseEntity<Response<ProductDetailDto>> {
-        return ResponseEntity(productUseCase.findProduct(request.toQuery(provider)), HttpStatus.OK)
+        val product = productUseCase.findProduct(request.toQuery(provider))
+
+        val response = Response.of(
+            data = product
+        )
+
+        return ResponseEntity(response, HttpStatus.OK)
     }
 
     @GetMapping("/products/{productId}/bids/histories")
@@ -49,7 +68,14 @@ class ProductController(
         provider: Provider,
         request: FindProductBidHistoryRequest
     ): ResponseEntity<Response<List<ProductBidHistoryDto>>> {
-        return ResponseEntity(productUseCase.findProductBidHistories(provider, request.toQuery(provider)), HttpStatus.OK)
+        val productBidHistories = productUseCase.findProductBidHistories(provider, request.toQuery(provider))
+
+        val response = Response.of(
+            pageResult = productBidHistories.pageResult,
+            data = productBidHistories.data
+        )
+
+        return ResponseEntity(response, HttpStatus.OK)
     }
 
     @GetMapping("/products/{productId}/bids/trend")
@@ -58,7 +84,13 @@ class ProductController(
         provider: Provider,
         request: FindProductPriceTrendRequest
     ): ResponseEntity<Response<ProductPriceTrendDto>> {
-        return ResponseEntity(productUseCase.findProductPriceTrend(request.toQuery(provider)), HttpStatus.OK)
+        val productPriceTrend = productUseCase.findProductPriceTrend(request.toQuery(provider))
+
+        val response = Response.of(
+            data = productPriceTrend
+        )
+
+        return ResponseEntity(response, HttpStatus.OK)
     }
 
     @PostMapping("/products/{productId}/bookmark")
