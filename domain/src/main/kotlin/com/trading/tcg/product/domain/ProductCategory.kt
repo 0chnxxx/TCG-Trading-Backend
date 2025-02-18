@@ -1,24 +1,20 @@
 package com.trading.tcg.product.domain
 
-import jakarta.persistence.*
+import com.trading.tcg.global.exception.CustomException
+import com.trading.tcg.product.exception.ProductErrorCode
 
-@Entity
-@Table(name = "product_category")
-class ProductCategory(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    val id: Long? = null,
-
-    @Column(name = "query_name", nullable = false)
+enum class ProductCategory(
     val queryName: String,
+    val displayName: String
+) {
+    POKEMON("pokemon", "포켓몬"),
+    YUGIOH("yugioh", "유희왕"),
+    DIGIMON("digimon", "디지몬");
 
-    @Column(name = "display_name", nullable = false)
-    val displayName: String,
-
-    @Column(name = "display_order", nullable = false)
-    val displayOrder: Int,
-
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    val filters: List<ProductCategoryFilter>
-)
+    companion object {
+        fun ofQuery(queryName: String): ProductCategory {
+            return ProductCategory.entries.find { it.queryName.uppercase() == queryName.uppercase() }
+                ?: throw CustomException(ProductErrorCode.INVALID_PRODUCT_TAB)
+        }
+    }
+}

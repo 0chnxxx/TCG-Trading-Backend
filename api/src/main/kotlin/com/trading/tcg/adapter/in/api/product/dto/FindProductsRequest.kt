@@ -5,8 +5,8 @@ import com.trading.tcg.global.dto.SortBy
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.exception.RequestErrorCode
-import com.trading.tcg.product.domain.ProductOrderBy
-import com.trading.tcg.product.domain.ProductTab
+import com.trading.tcg.application.product.dto.common.ProductField
+import com.trading.tcg.product.domain.ProductCategory
 
 data class FindProductsRequest(
     val order: String?,
@@ -29,9 +29,9 @@ data class FindProductsRequest(
     fun toQuery(provider: Provider): FindProductsQuery {
         return FindProductsQuery(
             userId = provider.getUser()?.id ?: 0,
-            order = order?.let { ProductOrderBy.ofQuery(it) } ?: ProductOrderBy.BID_PLACED_TIME,
+            order = order?.let { ProductField.ofQuery(it) } ?: ProductField.BID_PLACED_TIME,
             sort = sort?.let { SortBy.ofQuery(it) } ?: SortBy.DESC,
-            tab = tab.let { ProductTab.ofQuery(tab!!) },
+            tab = tab.let { ProductCategory.ofQuery(tab!!) },
             rank = rank ?: emptyList(),
             category = category ?: emptyList(),
             type = type ?: emptyList(),

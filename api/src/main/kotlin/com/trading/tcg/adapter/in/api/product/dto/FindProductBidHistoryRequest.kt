@@ -5,7 +5,7 @@ import com.trading.tcg.global.dto.SortBy
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.exception.RequestErrorCode
-import com.trading.tcg.product.domain.ProductBidOrderBy
+import com.trading.tcg.application.product.dto.common.ProductBidField
 import com.trading.tcg.product.domain.ProductBidStatus
 import com.trading.tcg.product.domain.ProductBidType
 import org.springframework.web.bind.annotation.PathVariable
@@ -21,7 +21,7 @@ data class FindProductBidHistoryRequest(
         return FindProductBidHistoryQuery(
             userId = provider.getUser()?.id ?: 0,
             productId = productId,
-            order = ProductBidOrderBy.CREATED_TIME,
+            order = ProductBidField.CREATED_TIME,
             sort = SortBy.DESC,
             type = type?.let { ProductBidType.ofQuery(it) }
                 ?: throw CustomException(RequestErrorCode.MISSING_REQUIRED_PARAMETER),

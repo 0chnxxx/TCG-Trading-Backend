@@ -1,9 +1,9 @@
-package com.trading.tcg.product.domain
+package com.trading.tcg.application.product.dto.common
 
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.product.exception.ProductErrorCode
 
-enum class ProductBidOrderBy(
+enum class ProductBidField(
     val queryName: String,
     val displayName: String
 ) {
@@ -12,8 +12,8 @@ enum class ProductBidOrderBy(
     PRICE("price", "가격");
 
     companion object {
-        fun ofQuery(queryName: String): ProductBidOrderBy {
-            return ProductBidOrderBy.entries.find { it.queryName.uppercase() == queryName.uppercase() }
+        fun ofQuery(queryName: String): ProductBidField {
+            return ProductBidField.entries.find { it.queryName.uppercase() == queryName.uppercase() }
                 ?: throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_ORDER)
         }
     }

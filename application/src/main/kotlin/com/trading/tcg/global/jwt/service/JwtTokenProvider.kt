@@ -11,11 +11,13 @@ import java.util.*
 
 @Component
 class JwtTokenProvider {
-    @Value("\${auth.jwt.secret-key}")
-    private lateinit var SECRET_KEY: String
+    @Value("\${application.authentication.jwt.secret-key}")
+    private lateinit var secretKey: String
 
-    private var ACCESS_EXPIRATION_TIME: Long = 2 * 60 * 60 * 1000L
-    private var REFRESH_EXPIRATION_TIME: Long = 14 * 24 * 60 * 60 * 1000L
+    companion object {
+        private const val ACCESS_EXPIRATION_TIME: Long = 2 * 60 * 60 * 1000L
+        private const val REFRESH_EXPIRATION_TIME: Long = 14 * 24 * 60 * 60 * 1000L
+    }
 
     fun createToken(command: CreateTokenCommand): JwtToken {
         val accessToken = accessToken(command)
@@ -33,7 +35,7 @@ class JwtTokenProvider {
             .setIssuedAt(Date(System.currentTimeMillis()))
             .setExpiration(Date(System.currentTimeMillis() + ACCESS_EXPIRATION_TIME))
             .setIssuer("TCG-TRADING")
-            .signWith(Keys.hmacShaKeyFor(SECRET_KEY.toByteArray(StandardCharsets.UTF_8)))
+            .signWith(Keys.hmacShaKeyFor(secretKey.toByteArray(StandardCharsets.UTF_8)))
             .compact()
     }
 
@@ -47,7 +49,7 @@ class JwtTokenProvider {
             .setIssuedAt(Date(System.currentTimeMillis()))
             .setExpiration(Date(System.currentTimeMillis() + REFRESH_EXPIRATION_TIME))
             .setIssuer("TCG-TRADING")
-            .signWith(Keys.hmacShaKeyFor(SECRET_KEY.toByteArray(StandardCharsets.UTF_8)))
+            .signWith(Keys.hmacShaKeyFor(secretKey.toByteArray(StandardCharsets.UTF_8)))
             .compact()
     }
 }

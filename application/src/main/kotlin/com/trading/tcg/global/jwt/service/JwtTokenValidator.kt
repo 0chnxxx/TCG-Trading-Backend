@@ -14,13 +14,13 @@ import java.nio.charset.StandardCharsets
 
 @Component
 class JwtTokenValidator {
-    @Value("\${auth.jwt.secret-key}")
-    private lateinit var SECRET_KEY: String
+    @Value("\${application.authentication.jwt.secret-key}")
+    private lateinit var secretKey: String
 
     fun validate(token: String): DecodedToken {
         try {
             val decodedToken = Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY.toByteArray(StandardCharsets.UTF_8))
+                .setSigningKey(secretKey.toByteArray(StandardCharsets.UTF_8))
                 .build()
                 .parseClaimsJws(token)
 

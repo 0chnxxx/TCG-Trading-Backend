@@ -19,9 +19,9 @@ import java.nio.charset.StandardCharsets
 @Component
 @RequiredArgsConstructor
 class JwtAuthenticationFilter(
+    private val objectMapper: ObjectMapper,
     private val jwtTokenValidator: JwtTokenValidator,
-    private val userDetailsService: UserDetailsService,
-    private val objectMapper: ObjectMapper
+    private val userDetailsService: UserDetailsService
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,

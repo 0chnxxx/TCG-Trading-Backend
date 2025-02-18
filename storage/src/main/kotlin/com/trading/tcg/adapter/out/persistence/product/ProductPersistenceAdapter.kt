@@ -1,5 +1,6 @@
 package com.trading.tcg.adapter.out.persistence.product
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy
 import com.querydsl.core.types.ExpressionUtils
@@ -10,9 +11,12 @@ import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.trading.tcg.adapter.out.persistence.global.util.ExpressionUtil
+import com.trading.tcg.application.product.dto.common.ProductBidField
+import com.trading.tcg.application.product.dto.common.ProductField
 import com.trading.tcg.application.product.dto.request.FindProductBidHistoryQuery
 import com.trading.tcg.application.product.dto.request.FindProductQuery
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
+import com.trading.tcg.application.product.dto.response.ProductCatalogDto
 import com.trading.tcg.application.product.dto.response.ProductDetailDto
 import com.trading.tcg.application.product.dto.response.ProductDto
 import com.trading.tcg.application.product.port.out.ProductPersistencePort
@@ -22,21 +26,29 @@ import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.product.domain.*
 import com.trading.tcg.product.exception.ProductErrorCode
 import com.trading.tcg.user.domain.QUser
-import com.trading.tcg.user.domain.User
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 import java.util.*
 
 @Repository
 class ProductPersistenceAdapter(
+    private val objectMapper: ObjectMapper,
     private val jpaQueryFactory: JPAQueryFactory,
     private val productJpaRepository: ProductJpaRepository,
-    private val productCategoryJpaRepository: ProductCategoryJpaRepository,
     private val productDealJpaRepository: ProductDealJpaRepository,
     private val productBookmarkJpaRepository: ProductBookmarkJpaRepository
 ): ProductPersistencePort {
+    @Value("\${application.data.product-catalog}")
+    private lateinit var productCatalogJsonPath: String
+
     override fun findById(id: Long): Optional<Product> {
         return productJpaRepository.findById(id)
+    }
+
+    override fun findProductCatalog(): ProductCatalogDto {
+        return objectMapper.readValue(ClassPathResource(productCatalogJsonPath).inputStream, ProductCatalogDto::class.java)
     }
 
     override fun findProductDtos(query: FindProductsQuery): Pageable<List<ProductDto>> {
@@ -55,21 +67,21 @@ class ProductPersistenceAdapter(
         val sort = Order.valueOf(query.sort.name)
 
         when (query.order) {
-            ProductOrderBy.BID_PLACED_TIME -> {
+            ProductField.BID_PLACED_TIME -> {
                 orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
                 orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
             }
-            ProductOrderBy.BID_CLOSED_TIME -> {
+            ProductField.BID_CLOSED_TIME -> {
                 orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.closedTime))
                 orderBuilder.add(OrderSpecifier(sort, qProductSellBid.closedTime))
             }
-            ProductOrderBy.BID_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
-            ProductOrderBy.DEAL_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
-            ProductOrderBy.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
+            ProductField.BID_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
+            ProductField.DEAL_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
+            ProductField.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
         }
 
         when (query.tab) {
-            ProductTab.POKEMON -> {
+            ProductCategory.POKEMON -> {
                 whereBuilder.and(qPokemonCard.id.isNotNull)
                 if (query.search != null) whereBuilder.and(qPokemonCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.rank) { qPokemonCard.rank.eq(it) })
@@ -78,7 +90,7 @@ class ProductPersistenceAdapter(
                 whereBuilder.and(ExpressionUtil.orAll(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
             }
 
-            ProductTab.YUGIOH -> {
+            ProductCategory.YUGIOH -> {
                 whereBuilder.and(qYugiohCard.id.isNotNull)
                 if (query.search != null) whereBuilder.and(qYugiohCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.category) { qYugiohCard.categories.contains(it) })
@@ -88,7 +100,7 @@ class ProductPersistenceAdapter(
                 whereBuilder.and(ExpressionUtil.orAll(query.summonType) { qYugiohCard.summonType.eq(it) })
             }
 
-            ProductTab.DIGIMON -> {
+            ProductCategory.DIGIMON -> {
                 whereBuilder.and(qDigimonCard.id.isNotNull)
                 if (query.search != null) whereBuilder.and(qDigimonCard.name.contains(query.search))
                 whereBuilder.and(ExpressionUtil.orAll(query.rank) { qDigimonCard.rank.eq(it) })
@@ -296,10 +308,6 @@ class ProductPersistenceAdapter(
             ).firstOrNull()
     }
 
-    override fun findProductCategoriesWithFilters(): List<ProductCategory> {
-        return productCategoryJpaRepository.findAllWithFilters()
-    }
-
     override fun findProductBuyBids(query: FindProductBidHistoryQuery): Pageable<List<ProductBuyBid>> {
         val qUser = QUser.user
         val qProduct = QProduct.product
@@ -311,9 +319,9 @@ class ProductPersistenceAdapter(
         val sort = Order.valueOf(query.sort.name)
 
         when (query.order) {
-            ProductBidOrderBy.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
-            ProductBidOrderBy.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.price))
-            ProductBidOrderBy.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.stock))
+            ProductBidField.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
+            ProductBidField.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.price))
+            ProductBidField.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.stock))
         }
 
         whereBuilder.and(qProductBuyBid.product.id.eq(query.productId))
@@ -366,9 +374,9 @@ class ProductPersistenceAdapter(
         val sort = Order.valueOf(query.sort.name)
 
         when (query.order) {
-            ProductBidOrderBy.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
-            ProductBidOrderBy.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.price))
-            ProductBidOrderBy.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.stock))
+            ProductBidField.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
+            ProductBidField.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.price))
+            ProductBidField.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductSellBid.stock))
         }
 
         whereBuilder.and(qProductSellBid.product.id.eq(query.productId))
@@ -423,9 +431,9 @@ class ProductPersistenceAdapter(
         val sort = Order.valueOf(query.sort.name)
 
         when (query.order) {
-            ProductBidOrderBy.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.createdTime))
-            ProductBidOrderBy.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.price))
-            ProductBidOrderBy.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.quantity))
+            ProductBidField.CREATED_TIME -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.createdTime))
+            ProductBidField.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.price))
+            ProductBidField.QUANTITY -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.quantity))
         }
 
         whereBuilder.and(qProductDealBid.product.id.eq(query.productId))

@@ -25,49 +25,23 @@ class ProductService(
 ): ProductUseCase {
     @Transactional(readOnly = true)
     override fun findProductCatalog(): ProductCatalogDto {
-        val productCategories = productPersistencePort.findProductCategoriesWithFilters()
-
-        val productCatalog = ProductCatalogDto(
-            categories = productCategories
-                .sortedBy { it.displayOrder }
-                .map { category ->
-                    ProductCatalogDto.ProductCategory(
-                        queryName = category.queryName,
-                        displayName = category.displayName,
-                        filters = category.filters
-                            .sortedBy { it.displayOrder }
-                            .map { filter ->
-                                ProductCatalogDto.ProductFilter(
-                                    queryName = filter.queryName,
-                                    displayName = filter.displayName,
-                                    options = filter.option.split("\n")
-                                )
-                            }
-                    )
-                }
-        )
-
-        return productCatalog
+        return productPersistencePort.findProductCatalog()
     }
 
     @Transactional(readOnly = true)
     override fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>> {
-        val productDtos = productPersistencePort.findProductDtos(query)
-
-        return productDtos
+        return productPersistencePort.findProductDtos(query)
     }
 
     @Transactional(readOnly = true)
     override fun findProduct(query: FindProductQuery): ProductDetailDto {
-        val productDto = productPersistencePort.findProductDto(query)
+        return productPersistencePort.findProductDto(query)
             ?: throw CustomException(ProductErrorCode.NOT_FOUND_PRODUCT)
-
-        return productDto
     }
 
     @Transactional(readOnly = true)
     override fun findProductBidHistories(provider: Provider, query: FindProductBidHistoryQuery): Pageable<List<ProductBidHistoryDto>> {
-        val productBids = when (query.type) {
+        return when (query.type) {
             ProductBidType.BUY -> {
                 val productBuyBids = productPersistencePort.findProductBuyBids(query)
 
@@ -94,8 +68,6 @@ class ProductService(
             }
             else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_TYPE)
         }
-
-        return productBids
     }
 
     @Transactional(readOnly = true)
