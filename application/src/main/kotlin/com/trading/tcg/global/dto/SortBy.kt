@@ -1,4 +1,4 @@
-package com.trading.tcg.global.domain
+package com.trading.tcg.global.dto
 
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.exception.GlobalErrorCode

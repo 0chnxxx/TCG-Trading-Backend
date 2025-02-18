@@ -1,6 +1,6 @@
 package com.trading.tcg.application.product.dto.request
 
-import com.trading.tcg.global.domain.SortBy
+import com.trading.tcg.global.dto.SortBy
 import com.trading.tcg.product.domain.ProductBidOrderBy
 import com.trading.tcg.product.domain.ProductBidStatus
 import com.trading.tcg.product.domain.ProductBidType

@@ -1,7 +1,7 @@
 package com.trading.tcg.adapter.`in`.api.product.dto
 
 import com.trading.tcg.application.product.dto.request.FindProductsQuery
-import com.trading.tcg.global.domain.SortBy
+import com.trading.tcg.global.dto.SortBy
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.exception.CustomException
 import com.trading.tcg.global.exception.RequestErrorCode
