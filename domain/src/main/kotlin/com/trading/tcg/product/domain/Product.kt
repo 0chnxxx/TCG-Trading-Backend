@@ -1,6 +1,6 @@
 package com.trading.tcg.product.domain
 
-import com.trading.tcg.global.domain.Base
+import com.trading.tcg.global.domain.BaseEntity
 import jakarta.persistence.*
 import java.math.BigDecimal
 
@@ -45,4 +45,4 @@ abstract class Product(
 
     @Column(name = "bookmark_count", nullable = false)
     val bookmarkCount: Int
-): Base()
+): BaseEntity()

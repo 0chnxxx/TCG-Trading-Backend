@@ -1,6 +1,6 @@
 package com.trading.tcg.user.domain
 
-import com.trading.tcg.global.domain.Base
+import com.trading.tcg.global.domain.BaseEntity
 import jakarta.persistence.*
 
 @Entity
@@ -20,7 +20,7 @@ class User(
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     val role: UserRole
-): Base() {
+): BaseEntity() {
     companion object {
         const val emailFormat = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$"
         const val emailMinLength = 5

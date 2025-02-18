@@ -1,6 +1,6 @@
 package com.trading.tcg.product.domain
 
-import com.trading.tcg.global.domain.Base
+import com.trading.tcg.global.domain.BaseEntity
 import com.trading.tcg.user.domain.User
 import jakarta.persistence.*
 import java.math.BigDecimal
@@ -37,5 +37,5 @@ class ProductSellBid(
 
     @Column(name = "closed_time", nullable = false)
     val closedTime: LocalDateTime
-): Base() {
+): BaseEntity() {
 }
