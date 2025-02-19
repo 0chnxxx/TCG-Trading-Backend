@@ -51,7 +51,7 @@ class ProductPersistenceAdapter(
         return objectMapper.readValue(ClassPathResource(productCatalogJsonPath).inputStream, ProductCatalogDto::class.java)
     }
 
-    override fun findProductDtos(query: FindProductsQuery): Pageable<List<ProductDto>> {
+    override fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>> {
         val qUser = QUser.user
         val qProduct = QProduct.product
         val qPokemonCard = QPokemonCard.pokemonCard
@@ -194,7 +194,7 @@ class ProductPersistenceAdapter(
         )
     }
 
-    override fun findProductDto(query: FindProductQuery): ProductDetailDto? {
+    override fun findProduct(query: FindProductQuery): ProductDetailDto? {
         val qProduct = QProduct.product
         val qPokemonCard = QPokemonCard.pokemonCard
         val qPokemonCardPack = QPokemonCardPack.pokemonCardPack

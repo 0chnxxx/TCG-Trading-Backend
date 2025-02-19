@@ -30,12 +30,12 @@ class ProductService(
 
     @Transactional(readOnly = true)
     override fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>> {
-        return productPersistencePort.findProductDtos(query)
+        return productPersistencePort.findProducts(query)
     }
 
     @Transactional(readOnly = true)
     override fun findProduct(query: FindProductQuery): ProductDetailDto {
-        return productPersistencePort.findProductDto(query)
+        return productPersistencePort.findProduct(query)
             ?: throw CustomException(ProductErrorCode.NOT_FOUND_PRODUCT)
     }
 

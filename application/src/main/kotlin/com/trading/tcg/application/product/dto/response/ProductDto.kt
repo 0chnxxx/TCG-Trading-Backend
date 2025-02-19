@@ -5,7 +5,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class ProductDto(
-    val id: Long?,
+    val id: Long,
     val name: String,
     val image: String,
     val recentDealPrice: String,
@@ -19,7 +19,7 @@ data class ProductDto(
     val updatedTime: LocalDateTime?
 ) {
     constructor(
-        id: Long?,
+        id: Long,
         name: String,
         image: String,
         recentDealPrice: BigDecimal?,

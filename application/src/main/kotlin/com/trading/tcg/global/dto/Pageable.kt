@@ -32,4 +32,17 @@ data class Pageable<T>(
             }
         }
     }
+
+    companion object {
+        @JvmStatic
+        fun <T> of(
+            pageResult: PageResult,
+            data: T
+        ): Pageable<T> {
+            return Pageable(
+                pageResult = pageResult,
+                data = data
+            )
+        }
+    }
 }
