@@ -29,6 +29,11 @@ class ProductService(
     }
 
     @Transactional(readOnly = true)
+    override fun findProductCount(query: FindProductsQuery): Long {
+        return productPersistencePort.findProductCount(query)
+    }
+
+    @Transactional(readOnly = true)
     override fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>> {
         return productPersistencePort.findProducts(query)
     }

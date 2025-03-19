@@ -31,6 +31,21 @@ class ProductController(
         return ResponseEntity(response, HttpStatus.OK)
     }
 
+    @GetMapping("/products/count")
+    override fun findProductCount(
+        @AuthenticationPrincipal
+        provider: Provider,
+        request: FindProductsRequest
+    ): ResponseEntity<Response<Long>> {
+        val count = productUseCase.findProductCount(request.toQuery(provider))
+
+        val response = Response.of(
+            data = count
+        )
+
+        return ResponseEntity(response, HttpStatus.OK)
+    }
+
     @GetMapping("/products")
     override fun findProducts(
         @AuthenticationPrincipal

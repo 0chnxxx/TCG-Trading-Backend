@@ -12,6 +12,7 @@ import java.util.*
 interface ProductPersistencePort {
     fun findById(id: Long): Optional<Product>
     fun findProductCatalog(): ProductCatalogDto
+    fun findProductCount(query: FindProductsQuery): Long
     fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>>
     fun findProduct(query: FindProductQuery): ProductDetailDto?
     fun findProductBuyBids(query: FindProductBidHistoryQuery): Pageable<List<ProductBuyBid>>
