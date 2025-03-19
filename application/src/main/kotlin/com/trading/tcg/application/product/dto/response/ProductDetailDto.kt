@@ -32,16 +32,14 @@ data class ProductDetailDto(
         category: String?,
         type: String?,
         form: String?,
-        maxBuyPrice: BigDecimal?,
-        maxBuyQuantity: Int?,
-        minSellPrice: BigDecimal?,
-        minSellQuantity: Int?,
+        buyBids: List<ProductBid>,
+        sellBids: List<ProductBid>,
         isBookmarked: Boolean,
         createdTime: LocalDateTime,
         updatedTime: LocalDateTime?
     ): this(
         id = id,
-        packs = packs,
+        packs = packs.distinct(),
         name = name,
         image = image,
         code = code,
@@ -49,12 +47,17 @@ data class ProductDetailDto(
         category = category?.split("\n") ?: emptyList(),
         type = type?.split("\n") ?: emptyList(),
         form = form?.split("\n") ?: emptyList(),
-        directBuyPrice = minSellPrice?.toDisplayString() ?: "-",
-        directBuyQuantity = minSellQuantity ?: 0,
-        directSellPrice = maxBuyPrice?.toDisplayString() ?: "-",
-        directSellQuantity = maxBuyQuantity ?: 0,
+        directBuyPrice = sellBids.minByOrNull { it.price }?.price?.toDisplayString() ?: "-",
+        directBuyQuantity = sellBids.minByOrNull { it.price }?.quantity ?: 0,
+        directSellPrice = buyBids.maxByOrNull { it.price }?.price?.toDisplayString() ?: "-",
+        directSellQuantity = buyBids.maxByOrNull { it.price }?.quantity ?: 0,
         isBookmarked = isBookmarked,
         createdTime = createdTime,
         updatedTime = updatedTime
+    )
+
+    data class ProductBid(
+        val price: BigDecimal,
+        val quantity: Int
     )
 }

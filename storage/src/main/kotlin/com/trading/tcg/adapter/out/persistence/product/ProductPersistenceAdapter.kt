@@ -51,6 +51,29 @@ class ProductPersistenceAdapter(
         return objectMapper.readValue(ClassPathResource(productCatalogJsonPath).inputStream, ProductCatalogDto::class.java)
     }
 
+    override fun findProductTotalCount(): Long {
+        val qUser = QUser.user
+        val qProduct = QProduct.product
+        val qPokemonCard = QPokemonCard.pokemonCard
+        val qYugiohCard = QYugiohCard.yugiohCard
+        val qDigimonCard = QDigimonCard.digimonCard
+        val qProductBuyBid = QProductBuyBid.productBuyBid
+        val qProductSellBid = QProductSellBid.productSellBid
+        val qProductBookmark = QProductBookmark.productBookmark
+
+        return jpaQueryFactory
+            .select(qProduct.id.countDistinct())
+            .from(qProduct)
+            .leftJoin(qPokemonCard).on(qPokemonCard.id.eq(qProduct.id))
+            .leftJoin(qYugiohCard).on(qYugiohCard.id.eq(qProduct.id))
+            .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
+            .leftJoin(qProductBuyBid).on(qProductBuyBid.product.id.eq(qProduct.id))
+            .leftJoin(qProductSellBid).on(qProductSellBid.product.id.eq(qProduct.id))
+            .leftJoin(qProductBookmark).on(qProductBookmark.product.id.eq(qProduct.id))
+            .leftJoin(qUser).on(qProductBookmark.user.id.eq(qUser.id))
+            .fetchOne() ?: 0
+    }
+
     override fun findProductCount(query: FindProductsQuery): Long {
         val qUser = QUser.user
         val qProduct = QProduct.product
@@ -63,48 +86,7 @@ class ProductPersistenceAdapter(
 
         val whereBuilder = BooleanBuilder()
 
-        if (query.tab != null) {
-            when (query.tab) {
-                ProductCategory.POKEMON -> {
-                    whereBuilder.and(qPokemonCard.id.isNotNull)
-                    if (query.search != null) whereBuilder.and(qPokemonCard.name.contains(query.search))
-                    whereBuilder.and(ExpressionUtil.orAll(query.rank) { qPokemonCard.rank.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qPokemonCard.categories.contains(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qPokemonCard.type.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
-                }
-
-                ProductCategory.YUGIOH -> {
-                    whereBuilder.and(qYugiohCard.id.isNotNull)
-                    if (query.search != null) whereBuilder.and(qYugiohCard.name.contains(query.search))
-                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qYugiohCard.categories.contains(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qYugiohCard.type.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.effect) { qYugiohCard.effect.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.species) { qYugiohCard.species.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.summonType) { qYugiohCard.summonType.eq(it) })
-                }
-
-                ProductCategory.DIGIMON -> {
-                    whereBuilder.and(qDigimonCard.id.isNotNull)
-                    if (query.search != null) whereBuilder.and(qDigimonCard.name.contains(query.search))
-                    whereBuilder.and(ExpressionUtil.orAll(query.rank) { qDigimonCard.rank.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qDigimonCard.category.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qDigimonCard.types.contains(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.form) { qDigimonCard.form.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.species) { qDigimonCard.species.eq(it) })
-                }
-
-                else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_TAB)
-            }
-        }
-
-        if (query.isBookmarked != null) {
-            whereBuilder.and(qProductBookmark.user.id.eq(query.userId))
-        }
-
-        if (query.isExcludedNotBidProduct != null && query.isExcludedNotBidProduct!!) {
-            whereBuilder.and(qProduct.buyBids.isNotEmpty.or(qProduct.sellBids.isNotEmpty))
-        }
+        filterProduct(query, whereBuilder, qPokemonCard, qYugiohCard, qDigimonCard, qProductBookmark, qProduct)
 
         return jpaQueryFactory
             .select(qProduct.id.countDistinct())
@@ -133,77 +115,10 @@ class ProductPersistenceAdapter(
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
 
-        val sort = Order.valueOf(query.sort.name)
+        orderProduct(query, orderBuilder, qProductBuyBid, qProductSellBid, qProduct)
+        filterProduct(query, whereBuilder, qPokemonCard, qYugiohCard, qDigimonCard, qProductBookmark, qProduct)
 
-        when (query.order) {
-            ProductField.BID_PLACED_TIME -> {
-                orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
-                orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
-            }
-            ProductField.BID_CLOSED_TIME -> {
-                orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.closedTime))
-                orderBuilder.add(OrderSpecifier(sort, qProductSellBid.closedTime))
-            }
-            ProductField.BID_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.buyBidCount.add(qProduct.sellBidCount)))
-            ProductField.DEAL_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
-            ProductField.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
-        }
-
-        if (query.tab != null) {
-            when (query.tab) {
-                ProductCategory.POKEMON -> {
-                    whereBuilder.and(qPokemonCard.id.isNotNull)
-                    if (query.search != null) whereBuilder.and(qPokemonCard.name.contains(query.search))
-                    whereBuilder.and(ExpressionUtil.orAll(query.rank) { qPokemonCard.rank.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qPokemonCard.categories.contains(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qPokemonCard.type.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
-                }
-
-                ProductCategory.YUGIOH -> {
-                    whereBuilder.and(qYugiohCard.id.isNotNull)
-                    if (query.search != null) whereBuilder.and(qYugiohCard.name.contains(query.search))
-                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qYugiohCard.categories.contains(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qYugiohCard.type.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.effect) { qYugiohCard.effect.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.species) { qYugiohCard.species.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.summonType) { qYugiohCard.summonType.eq(it) })
-                }
-
-                ProductCategory.DIGIMON -> {
-                    whereBuilder.and(qDigimonCard.id.isNotNull)
-                    if (query.search != null) whereBuilder.and(qDigimonCard.name.contains(query.search))
-                    whereBuilder.and(ExpressionUtil.orAll(query.rank) { qDigimonCard.rank.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qDigimonCard.category.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qDigimonCard.types.contains(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.form) { qDigimonCard.form.eq(it) })
-                    whereBuilder.and(ExpressionUtil.orAll(query.species) { qDigimonCard.species.eq(it) })
-                }
-
-                else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_TAB)
-            }
-        }
-
-        if (query.isBookmarked != null) {
-            whereBuilder.and(qProductBookmark.user.id.eq(query.userId))
-        }
-
-        if (query.isExcludedNotBidProduct != null && query.isExcludedNotBidProduct!!) {
-            whereBuilder.and(qProduct.buyBids.isNotEmpty.or(qProduct.sellBids.isNotEmpty))
-        }
-
-        val totalCount = jpaQueryFactory
-            .select(qProduct.id.countDistinct())
-            .from(qProduct)
-            .leftJoin(qPokemonCard).on(qPokemonCard.id.eq(qProduct.id))
-            .leftJoin(qYugiohCard).on(qYugiohCard.id.eq(qProduct.id))
-            .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
-            .leftJoin(qProductBuyBid).on(qProductBuyBid.product.id.eq(qProduct.id))
-            .leftJoin(qProductSellBid).on(qProductSellBid.product.id.eq(qProduct.id))
-            .leftJoin(qProductBookmark).on(qProductBookmark.product.id.eq(qProduct.id))
-            .leftJoin(qUser).on(qProductBookmark.user.id.eq(qUser.id))
-            .where(whereBuilder.value)
-            .fetchOne() ?: 0
+        val totalCount = findProductTotalCount()
 
         val products = jpaQueryFactory
             .select(
@@ -265,6 +180,91 @@ class ProductPersistenceAdapter(
         )
     }
 
+    private fun orderProduct(
+        query: FindProductsQuery,
+        orderBuilder: MutableList<OrderSpecifier<*>>,
+        qProductBuyBid: QProductBuyBid,
+        qProductSellBid: QProductSellBid,
+        qProduct: QProduct
+    ) {
+        val sort = Order.valueOf(query.sort.name)
+
+        when (query.order) {
+            ProductField.BID_PLACED_TIME -> {
+                orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
+                orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
+            }
+
+            ProductField.BID_CLOSED_TIME -> {
+                orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.closedTime))
+                orderBuilder.add(OrderSpecifier(sort, qProductSellBid.closedTime))
+            }
+
+            ProductField.BID_COUNT -> orderBuilder.add(
+                OrderSpecifier(
+                    sort,
+                    qProduct.buyBidCount.add(qProduct.sellBidCount)
+                )
+            )
+
+            ProductField.DEAL_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
+            ProductField.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
+        }
+    }
+
+    private fun filterProduct(
+        query: FindProductsQuery,
+        whereBuilder: BooleanBuilder,
+        qPokemonCard: QPokemonCard,
+        qYugiohCard: QYugiohCard,
+        qDigimonCard: QDigimonCard,
+        qProductBookmark: QProductBookmark,
+        qProduct: QProduct
+    ) {
+        if (query.tab != null) {
+            when (query.tab) {
+                ProductCategory.POKEMON -> {
+                    whereBuilder.and(qPokemonCard.id.isNotNull)
+                    if (query.search != null) whereBuilder.and(qPokemonCard.name.contains(query.search))
+                    whereBuilder.and(ExpressionUtil.orAll(query.rank) { qPokemonCard.rank.eq(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qPokemonCard.categories.contains(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qPokemonCard.type.eq(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.regulationMark) { qPokemonCard.regulationMark.eq(it) })
+                }
+
+                ProductCategory.YUGIOH -> {
+                    whereBuilder.and(qYugiohCard.id.isNotNull)
+                    if (query.search != null) whereBuilder.and(qYugiohCard.name.contains(query.search))
+                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qYugiohCard.categories.contains(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qYugiohCard.type.eq(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.effect) { qYugiohCard.effect.eq(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.species) { qYugiohCard.species.eq(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.summonType) { qYugiohCard.summonType.eq(it) })
+                }
+
+                ProductCategory.DIGIMON -> {
+                    whereBuilder.and(qDigimonCard.id.isNotNull)
+                    if (query.search != null) whereBuilder.and(qDigimonCard.name.contains(query.search))
+                    whereBuilder.and(ExpressionUtil.orAll(query.rank) { qDigimonCard.rank.eq(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.category) { qDigimonCard.category.eq(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.type) { qDigimonCard.types.contains(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.form) { qDigimonCard.form.eq(it) })
+                    whereBuilder.and(ExpressionUtil.orAll(query.species) { qDigimonCard.species.eq(it) })
+                }
+
+                else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_TAB)
+            }
+        }
+
+        if (query.isBookmarked != null) {
+            whereBuilder.and(qProductBookmark.user.id.eq(query.userId))
+        }
+
+        if (query.isExcludedNotBidProduct != null && query.isExcludedNotBidProduct!!) {
+            whereBuilder.and(qProduct.buyBids.isNotEmpty.or(qProduct.sellBids.isNotEmpty))
+        }
+    }
+
     override fun findProduct(query: FindProductQuery): ProductDetailDto? {
         val qProduct = QProduct.product
         val qPokemonCard = QPokemonCard.pokemonCard
@@ -279,26 +279,6 @@ class ProductPersistenceAdapter(
         val qProductSellBid = QProductSellBid.productSellBid
         val qBookmark = QProductBookmark.productBookmark
 
-        val maxBuySubQuery = JPAExpressions
-            .select(qProductBuyBid.id)
-            .from(qProductBuyBid)
-            .where(
-                qProductBuyBid.product.id.eq(qProduct.id)
-                    .and(qProductBuyBid.status.eq(ProductBidStatus.BIDDING))
-            )
-            .orderBy(qProductBuyBid.price.desc())
-            .limit(1)
-
-        val minSellSubQuery = JPAExpressions
-            .select(qProductSellBid.id)
-            .from(qProductSellBid)
-            .where(
-                qProductSellBid.product.id.eq(qProduct.id)
-                    .and(qProductSellBid.status.eq(ProductBidStatus.BIDDING))
-            )
-            .orderBy(qProductSellBid.price.asc())
-            .limit(1)
-
         return jpaQueryFactory
             .from(qProduct)
             .leftJoin(qPokemonCard).on(qPokemonCard.id.eq(qProduct.id))
@@ -309,8 +289,9 @@ class ProductPersistenceAdapter(
             .leftJoin(qYugiohCardPack).on(qYugiohCardPack.id.eq(qYugiohCardPackCatalog.pack.id))
             .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
             .leftJoin(qDigimonCardPack).on(qDigimonCardPack.id.eq(qDigimonCard.pack.id))
-            .leftJoin(qProductBuyBid).on(qProductBuyBid.id.eq(maxBuySubQuery))
-            .leftJoin(qProductSellBid).on(qProductSellBid.id.eq(minSellSubQuery))
+            .leftJoin(qProductBuyBid).on(qProductBuyBid.product.id.eq(qProduct.id).and(qProductBuyBid.status.eq(ProductBidStatus.BIDDING)))
+            .leftJoin(qProductSellBid).on(qProductSellBid.product.id.eq(qProduct.id).and(qProductSellBid.status.eq(ProductBidStatus.BIDDING)))
+            .leftJoin(qBookmark).on(qBookmark.product.id.eq(qProduct.id).and(qBookmark.user.id.eq(query.userId)))
             .where(qProduct.id.eq(query.productId))
             .transform(
                 GroupBy.groupBy(qProduct.id).list(
@@ -359,19 +340,21 @@ class ProductPersistenceAdapter(
                             .`when`(qDigimonCard.id.isNotNull).then(qDigimonCard.form)
                             .`when`(qPokemonCard.id.isNotNull).then(Expressions.nullExpression())
                             .otherwise(Expressions.nullExpression()),
-                        qProductBuyBid.price,
-                        qProductBuyBid.stock,
-                        qProductSellBid.price,
-                        qProductSellBid.stock,
-                        qProduct.id.`in`(
-                            ExpressionUtils.list(
-                                Long::class.java,
-                                JPAExpressions
-                                    .select(qBookmark.product.id)
-                                    .from(qBookmark)
-                                    .where(qBookmark.user.id.eq(query.userId))
-                            )
+                        GroupBy.list(
+                            Projections.constructor(
+                                ProductDetailDto.ProductBid::class.java,
+                                qProductBuyBid.price,
+                                qProductBuyBid.quantity
+                            ).skipNulls()
                         ),
+                        GroupBy.list(
+                            Projections.constructor(
+                                ProductDetailDto.ProductBid::class.java,
+                                qProductSellBid.price,
+                                qProductSellBid.quantity
+                            ).skipNulls()
+                        ),
+                        qBookmark.isNotNull,
                         qProduct.createdTime,
                         qProduct.updatedTime
                     )

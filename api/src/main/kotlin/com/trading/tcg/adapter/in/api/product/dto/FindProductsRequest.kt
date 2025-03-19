@@ -31,7 +31,7 @@ data class FindProductsRequest(
             userId = provider.getUser()?.id ?: 0,
             order = order?.let { ProductField.ofQuery(it) } ?: ProductField.BID_PLACED_TIME,
             sort = sort?.let { SortBy.ofQuery(it) } ?: SortBy.DESC,
-            tab = tab.let { ProductCategory.ofQuery(tab!!) },
+            tab = tab?.let { ProductCategory.ofQuery(tab) },
             rank = rank ?: emptyList(),
             category = category ?: emptyList(),
             type = type ?: emptyList(),
