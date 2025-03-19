@@ -15,6 +15,12 @@ interface ProductSwagger {
         provider: Provider
     ): ResponseEntity<Response<ProductCatalogDto>>
 
+    @Operation(summary = "상품 갯수 조회", description = "상품 갯수를 조회한다.")
+    fun findProductCount(
+        provider: Provider,
+        request: FindProductsRequest
+    ): ResponseEntity<Response<Long>>
+
     @Operation(summary = "상품 목록 조회", description = "상품 목록을 조회한다.")
     fun findProducts(
         provider: Provider,
@@ -44,4 +50,26 @@ interface ProductSwagger {
         provider: Provider,
         request: UpdateProductBookmarkRequest
     ): ResponseEntity<Unit>
+
+//    @Operation(summary = "상품 즉시 구매", description = "상품을 즉시 구매한다.")
+//    fun buyProduct(
+//        provider: Provider,
+//        productId: Long,
+//        request: BuyProductRequest
+//    ): ResponseEntity<Unit>
+//
+//    @Operation(summary = "상품 구매 입찰", description = "상품에 대한 구매 입찰을 등록한다.")
+//    fun submitProductBuyBid(
+//        provider: Provider,
+//        productId: Long,
+//        request: SubmitProductBuyBidRequest
+//    ): ResponseEntity<Unit>
+//
+//    @Operation(summary = "상품 구매 입찰 제안", description = "상품 판매자에게 구매 입찰을 제안한다.")
+//    fun offerProductBuyBid(
+//        provider: Provider,
+//        productId: Long,
+//        bidId: Long,
+//        request: OfferProductBuyBidRequest
+//    ): ResponseEntity<Unit>
 }
