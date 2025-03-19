@@ -3,35 +3,8 @@
     {
       "queryName": "pokemon",
       "displayName": "포켓몬",
+      "image": "https://w7.pngwing.com/pngs/629/121/png-transparent-pokemon-logo.png",
       "filters": [
-        {
-          "queryName": "rank",
-          "displayName": "등급",
-          "options": [
-            "C",
-            "R",
-            "U",
-            "H",
-            "HR",
-            "SR",
-            "RR",
-            "빛",
-            "PR",
-            "TR",
-            "S",
-            "SSR",
-            "CHR",
-            "RRR",
-            "A",
-            "CSR",
-            "UR",
-            "K",
-            "AR",
-            "SAR",
-            "ACE",
-            "P"
-          ]
-        },
         {
           "queryName": "category",
           "displayName": "카테고리",
@@ -66,6 +39,34 @@
             "스타디움",
             "기본 에너지",
             "특수 에너지"
+          ]
+        },
+        {
+          "queryName": "rank",
+          "displayName": "등급",
+          "options": [
+            "C",
+            "R",
+            "U",
+            "H",
+            "HR",
+            "SR",
+            "RR",
+            "빛",
+            "PR",
+            "TR",
+            "S",
+            "SSR",
+            "CHR",
+            "RRR",
+            "A",
+            "CSR",
+            "UR",
+            "K",
+            "AR",
+            "SAR",
+            "ACE",
+            "P"
           ]
         },
         {
@@ -105,13 +106,24 @@
     {
       "queryName": "yugioh",
       "displayName": "유희왕",
+      "image": "https://i.namu.wiki/i/NucgZtfPii0jBdF9BOi3HWb6supF83qdbdlB4sF9j0BkZqSr_nkuowt4n-s-LoJuOQAHZAW5K9RlrLzE-B4WQw.webp",
       "filters": [
         {
-          "queryName": "summonType",
-          "displayName": "소환 방식",
+          "queryName": "category",
+          "displayName": "카테고리",
           "options": [
-            "레벨",
-            "랭크",
+            "융합",
+            "효과",
+            "리버스",
+            "특수 소환",
+            "툰",
+            "의식",
+            "스피릿",
+            "유니온",
+            "듀얼",
+            "싱크로",
+            "튜너",
+            "엑시즈",
             "링크"
           ]
         },
@@ -175,21 +187,11 @@
           ]
         },
         {
-          "queryName": "category",
-          "displayName": "카테고리",
+          "queryName": "summonType",
+          "displayName": "소환 방식",
           "options": [
-            "융합",
-            "효과",
-            "리버스",
-            "특수 소환",
-            "툰",
-            "의식",
-            "스피릿",
-            "유니온",
-            "듀얼",
-            "싱크로",
-            "튜너",
-            "엑시즈",
+            "레벨",
+            "랭크",
             "링크"
           ]
         }
@@ -198,7 +200,18 @@
     {
       "queryName": "digimon",
       "displayName": "디지몬",
+      "image": "https://w7.pngwing.com/pngs/761/326/png-transparent-patamon-digimon-adventure-tri-matt-ishida-logo-digimon-text-logo-cartoon.png",
       "filters": [
+        {
+          "queryName": "category",
+          "displayName": "카테고리",
+          "options": [
+            "디지타마",
+            "디지몬",
+            "테이머",
+            "옵션"
+          ]
+        },
         {
           "queryName": "rank",
           "displayName": "등급",
@@ -209,16 +222,6 @@
             "SR",
             "SEC",
             "P"
-          ]
-        },
-        {
-          "queryName": "category",
-          "displayName": "카테고리",
-          "options": [
-            "디지타마",
-            "디지몬",
-            "테이머",
-            "옵션"
           ]
         },
         {

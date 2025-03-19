@@ -6,6 +6,7 @@ data class ProductCatalogDto(
     data class ProductCategory(
         val queryName: String,
         val displayName: String,
+        val image: String,
         val filters: List<ProductFilter>,
     )
 
