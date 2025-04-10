@@ -3,7 +3,6 @@ package com.trading.tcg.adapter.out.persistence.product
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.group.GroupBy
-import com.querydsl.core.types.ExpressionUtils
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.Projections
@@ -103,19 +102,21 @@ class ProductPersistenceAdapter(
     }
 
     override fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>> {
-        val qUser = QUser.user
-        val qProduct = QProduct.product
-        val qPokemonCard = QPokemonCard.pokemonCard
-        val qYugiohCard = QYugiohCard.yugiohCard
-        val qDigimonCard = QDigimonCard.digimonCard
-        val qProductBuyBid = QProductBuyBid.productBuyBid
-        val qProductSellBid = QProductSellBid.productSellBid
-        val qProductBookmark = QProductBookmark.productBookmark
+        val qProduct = QProduct("product")
+        val qPokemonCard = QPokemonCard("pokemonCard")
+        val qYugiohCard = QYugiohCard("yugiohCard")
+        val qDigimonCard = QDigimonCard("digimonCard")
+        val qProductDealBid = QProductDealBid("productDealBid")
+        val qLatestDealBid = QProductDealBid("latestDealBid")
+        val qProductBuyBid = QProductBuyBid("productBuyBid")
+        val qProductSellBid = QProductSellBid("productSellBid")
+        val qProductBookmark = QProductBookmark("productBookmark")
+        val qMyBookmark = QProductBookmark("myBookmark")
 
         val whereBuilder = BooleanBuilder()
         val orderBuilder = mutableListOf<OrderSpecifier<*>>()
 
-        orderProduct(query, orderBuilder, qProductBuyBid, qProductSellBid, qProduct)
+        orderProduct(query, orderBuilder, qProductDealBid, qProductBuyBid, qProductSellBid, qProductBookmark, qProduct)
         filterProduct(query, whereBuilder, qPokemonCard, qYugiohCard, qDigimonCard, qProductBookmark, qProduct)
 
         val totalCount = findProductTotalCount()
@@ -125,32 +126,14 @@ class ProductPersistenceAdapter(
                 Projections.constructor(
                     ProductDto::class.java,
                     qProduct.id,
-                    Expressions.cases()
-                        .`when`(qPokemonCard.id.isNotNull).then(qPokemonCard.name)
-                        .`when`(qYugiohCard.id.isNotNull).then(qYugiohCard.name)
-                        .`when`(qDigimonCard.id.isNotNull).then(qDigimonCard.name)
-                        .otherwise(Expressions.nullExpression()),
-                    Expressions.cases()
-                        .`when`(qPokemonCard.id.isNotNull).then(qPokemonCard.image)
-                        .`when`(qYugiohCard.id.isNotNull).then(qYugiohCard.image)
-                        .`when`(qDigimonCard.id.isNotNull).then(qDigimonCard.image)
-                        .otherwise(Expressions.nullExpression()),
-                    qProduct.recentDealPrice,
-                    qProduct.directBuyPrice,
-                    qProduct.directSellPrice,
-                    qProduct.dealCount,
-                    qProduct.buyBidCount,
-                    qProduct.sellBidCount,
-                    qProduct.bookmarkCount,
-                    qProduct.id.`in`(
-                        ExpressionUtils.list(
-                            Long::class.java,
-                            JPAExpressions
-                                .select(qProductBookmark.product.id)
-                                .from(qProductBookmark)
-                                .where(qProductBookmark.user.id.eq(query.userId))
-                        )
-                    ),
+                    qProduct.name,
+                    qProduct.image,
+                    qLatestDealBid.price,
+                    qProductDealBid.count(),
+                    qProductBuyBid.count(),
+                    qProductSellBid.count(),
+                    qProductBookmark.count(),
+                    qMyBookmark.isNotNull,
                     qProduct.createdTime,
                     qProduct.updatedTime
                 )
@@ -159,10 +142,23 @@ class ProductPersistenceAdapter(
             .leftJoin(qPokemonCard).on(qPokemonCard.id.eq(qProduct.id))
             .leftJoin(qYugiohCard).on(qYugiohCard.id.eq(qProduct.id))
             .leftJoin(qDigimonCard).on(qDigimonCard.id.eq(qProduct.id))
+            .leftJoin(qProductDealBid).on(qProductDealBid.product.id.eq(qProduct.id))
+            .leftJoin(qLatestDealBid).on(
+                qLatestDealBid.product.id.eq(qProduct.id),
+                qLatestDealBid.createdTime.eq(
+                    JPAExpressions
+                        .select(qProductDealBid.createdTime.max())
+                        .from(qProductDealBid)
+                        .where(qProductDealBid.product.id.eq(qProduct.id))
+                )
+            )
             .leftJoin(qProductBuyBid).on(qProductBuyBid.product.id.eq(qProduct.id))
             .leftJoin(qProductSellBid).on(qProductSellBid.product.id.eq(qProduct.id))
             .leftJoin(qProductBookmark).on(qProductBookmark.product.id.eq(qProduct.id))
-            .leftJoin(qUser).on(qProductBookmark.user.id.eq(qUser.id))
+            .leftJoin(qMyBookmark).on(
+                qMyBookmark.product.id.eq(qProduct.id),
+                qMyBookmark.user.id.eq(query.userId)
+            )
             .where(whereBuilder.value)
             .orderBy(*orderBuilder.toTypedArray())
             .groupBy(qProduct.id)
@@ -183,8 +179,10 @@ class ProductPersistenceAdapter(
     private fun orderProduct(
         query: FindProductsQuery,
         orderBuilder: MutableList<OrderSpecifier<*>>,
+        qProductDealBid: QProductDealBid,
         qProductBuyBid: QProductBuyBid,
         qProductSellBid: QProductSellBid,
+        qProductBookmark: QProductBookmark,
         qProduct: QProduct
     ) {
         val sort = Order.valueOf(query.sort.name)
@@ -194,21 +192,19 @@ class ProductPersistenceAdapter(
                 orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.createdTime))
                 orderBuilder.add(OrderSpecifier(sort, qProductSellBid.createdTime))
             }
-
             ProductField.BID_CLOSED_TIME -> {
                 orderBuilder.add(OrderSpecifier(sort, qProductBuyBid.closedTime))
                 orderBuilder.add(OrderSpecifier(sort, qProductSellBid.closedTime))
             }
-
             ProductField.BID_COUNT -> orderBuilder.add(
                 OrderSpecifier(
                     sort,
-                    qProduct.buyBidCount.add(qProduct.sellBidCount)
+                    qProduct.buyBids.size().add(qProduct.sellBids.size())
                 )
             )
-
-            ProductField.DEAL_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.dealCount))
-            ProductField.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProduct.recentDealPrice))
+            ProductField.DEAL_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProduct.deals.size()))
+            ProductField.PRICE -> orderBuilder.add(OrderSpecifier(sort, qProductDealBid.price))
+            ProductField.BOOKMARK_COUNT -> orderBuilder.add(OrderSpecifier(sort, qProductBookmark.count()))
         }
     }
 
@@ -305,21 +301,9 @@ class ProductPersistenceAdapter(
                                 .`when`(qDigimonCard.id.isNotNull).then(qDigimonCardPack.name)
                                 .otherwise(Expressions.nullExpression())
                         ),
-                        Expressions.cases()
-                            .`when`(qPokemonCard.id.isNotNull).then(qPokemonCard.name)
-                            .`when`(qYugiohCard.id.isNotNull).then(qYugiohCard.name)
-                            .`when`(qDigimonCard.id.isNotNull).then(qDigimonCard.name)
-                            .otherwise(Expressions.nullExpression()),
-                        Expressions.cases()
-                            .`when`(qPokemonCard.id.isNotNull).then(qPokemonCard.image)
-                            .`when`(qYugiohCard.id.isNotNull).then(qYugiohCard.image)
-                            .`when`(qDigimonCard.id.isNotNull).then(qDigimonCard.image)
-                            .otherwise(Expressions.nullExpression()),
-                        Expressions.cases()
-                            .`when`(qPokemonCard.id.isNotNull).then(qPokemonCard.code)
-                            .`when`(qYugiohCard.id.isNotNull).then(qYugiohCard.code)
-                            .`when`(qDigimonCard.id.isNotNull).then(qDigimonCard.code)
-                            .otherwise(Expressions.nullExpression()),
+                        qProduct.name,
+                        qProduct.image,
+                        qProduct.code,
                         Expressions.cases()
                             .`when`(qPokemonCard.id.isNotNull).then(qPokemonCard.rank)
                             .`when`(qDigimonCard.id.isNotNull).then(qDigimonCard.rank)
@@ -497,20 +481,16 @@ class ProductPersistenceAdapter(
                 qProductBuyBid.status.eq(ProductBidStatus.BIDDING)
                     .or(qProductSellBid.status.eq(ProductBidStatus.BIDDING))
             )
-
             ProductBidStatus.DEALT -> whereBuilder.and(
                 qProductBuyBid.status.eq(ProductBidStatus.DEALT).or(qProductSellBid.status.eq(ProductBidStatus.DEALT))
             )
-
             ProductBidStatus.CANCELLED -> whereBuilder.and(
                 qProductBuyBid.status.eq(ProductBidStatus.CANCELLED)
                     .or(qProductSellBid.status.eq(ProductBidStatus.CANCELLED))
             )
-
             ProductBidStatus.CLOSED -> whereBuilder.and(
                 qProductBuyBid.status.eq(ProductBidStatus.CLOSED).or(qProductSellBid.status.eq(ProductBidStatus.CLOSED))
             )
-
             else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_STATUS)
         }
 

@@ -11,7 +11,8 @@ enum class ProductField(
     BID_CLOSED_TIME("bidClosedTime", "입찰 종료 시간"),
     BID_COUNT("bidCount", "입찰 수"),
     DEAL_COUNT("dealCount", "거래 수"),
-    PRICE("price", "가격");
+    PRICE("price", "가격"),
+    BOOKMARK_COUNT("bookmarkCount", "저장 수");
 
     companion object {
         fun ofQuery(queryName: String): ProductField {

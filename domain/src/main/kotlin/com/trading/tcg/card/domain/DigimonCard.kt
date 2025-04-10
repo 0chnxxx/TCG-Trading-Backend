@@ -9,41 +9,17 @@ import java.math.BigDecimal
 @DiscriminatorValue("DIGIMON")
 class DigimonCard(
     id: Long?,
-
-    recentDealPrice: BigDecimal?,
-
-    dealCount: Int,
-
+    code: String,
+    name: String,
+    image: String,
     deals: List<ProductDealBid>,
-
-    directBuyPrice: BigDecimal?,
-
-    buyBidCount: Int,
-
     buyBids: List<ProductBuyBid>,
-
-    directSellPrice: BigDecimal?,
-
-    sellBidCount: Int,
-
     sellBids: List<ProductSellBid>,
-
-    bookmarkCount: Int,
-
     bookmarks: List<ProductBookmark>,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pack_id", nullable = false)
     val pack: DigimonCardPack,
-
-    @Column(name = "code", nullable = false)
-    val code: String,
-
-    @Column(name = "name", nullable = false)
-    val name: String,
-
-    @Column(name = "image", nullable = false)
-    val image: String,
 
     @Column(name = "rank", nullable = false)
     val rank: String,
@@ -82,15 +58,11 @@ class DigimonCard(
     val bottomDescription: String?
 ): Product(
     id = id,
-    recentDealPrice = recentDealPrice,
-    dealCount = dealCount,
+    code = code,
+    name = name,
+    image = image,
     deals = deals,
-    directBuyPrice = directBuyPrice,
-    buyBidCount = buyBidCount,
     buyBids = buyBids,
-    directSellPrice = directSellPrice,
-    sellBidCount = sellBidCount,
     sellBids = sellBids,
-    bookmarkCount = bookmarkCount,
     bookmarks = bookmarks
 )

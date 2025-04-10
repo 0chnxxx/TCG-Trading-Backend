@@ -9,27 +9,12 @@ import java.math.BigDecimal
 @DiscriminatorValue("POKEMON")
 class PokemonCard(
     id: Long?,
-
-    recentDealPrice: BigDecimal?,
-
-    dealCount: Int,
-
+    code: String,
+    name: String,
+    image: String,
     deals: List<ProductDealBid>,
-
-    directBuyPrice: BigDecimal?,
-
-    buyBidCount: Int,
-
     buyBids: List<ProductBuyBid>,
-
-    directSellPrice: BigDecimal?,
-
-    sellBidCount: Int,
-
     sellBids: List<ProductSellBid>,
-
-    bookmarkCount: Int,
-
     bookmarks: List<ProductBookmark>,
 
     @ManyToMany
@@ -39,15 +24,6 @@ class PokemonCard(
         inverseJoinColumns = [JoinColumn(name = "pack_id")]
     )
     val packs: List<PokemonCardPack>,
-
-    @Column(name = "code", nullable = false)
-    val code: String,
-
-    @Column(name = "name", nullable = false)
-    val name: String,
-
-    @Column(name = "image", nullable = false)
-    val image: String,
 
     @Column(name = "categories", nullable = false)
     val categories: String,
@@ -92,15 +68,11 @@ class PokemonCard(
     val skills: List<PokemonCardSkill>
 ): Product(
     id = id,
-    recentDealPrice = recentDealPrice,
-    dealCount = dealCount,
+    code = code,
+    name = name,
+    image = image,
     deals = deals,
-    directBuyPrice = directBuyPrice,
-    buyBidCount = buyBidCount,
     buyBids = buyBids,
-    directSellPrice = directSellPrice,
-    sellBidCount = sellBidCount,
     sellBids = sellBids,
-    bookmarkCount = bookmarkCount,
     bookmarks = bookmarks
 )
