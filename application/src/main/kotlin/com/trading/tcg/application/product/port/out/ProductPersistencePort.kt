@@ -16,10 +16,12 @@ interface ProductPersistencePort {
     fun findProductCount(query: FindProductsQuery): Long
     fun findProducts(query: FindProductsQuery): Pageable<List<ProductDto>>
     fun findProduct(query: FindProductQuery): ProductDetailDto?
-    fun findProductBuyBids(query: FindProductBidHistoryQuery): Pageable<List<ProductBuyBid>>
-    fun findProductSellBids(query: FindProductBidHistoryQuery): Pageable<List<ProductSellBid>>
     fun findProductDealBids(query: FindProductBidHistoryQuery): Pageable<List<ProductDealBid>>
     fun findProductDealsByProductIdAfterDateTime(productId: Long, dateTime: LocalDateTime): List<ProductDealBid>
+    fun findProductBuyBids(query: FindProductBidHistoryQuery): Pageable<List<ProductBuyBid>>
+    fun saveProductBuyBid(productBuyBid: ProductBuyBid)
+    fun findProductSellBids(query: FindProductBidHistoryQuery): Pageable<List<ProductSellBid>>
+    fun saveProductSellBid(productSellBid: ProductSellBid)
     fun findProductBookmark(id: ProductBookmark.ProductBookmarkId): Optional<ProductBookmark>
     fun saveProductBookmark(productBookmark: ProductBookmark)
     fun deleteProductBookmark(productBookmark: ProductBookmark)

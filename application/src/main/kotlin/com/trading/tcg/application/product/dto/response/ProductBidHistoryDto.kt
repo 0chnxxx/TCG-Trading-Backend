@@ -5,7 +5,6 @@ import com.trading.tcg.global.util.BigDecimalUtil.toDisplayString
 import com.trading.tcg.product.domain.ProductBuyBid
 import com.trading.tcg.product.domain.ProductDealBid
 import com.trading.tcg.product.domain.ProductSellBid
-import com.trading.tcg.user.domain.User
 import java.time.LocalDateTime
 
 data class ProductBidHistoryDto(

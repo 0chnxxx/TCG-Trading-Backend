@@ -14,6 +14,7 @@ data class FindProductBidHistoryRequest(
     @PathVariable
     val productId: Long,
     val type: String?,
+    val status: String?,
     val page: Int?,
     val size: Int?
 ) {
@@ -23,9 +24,8 @@ data class FindProductBidHistoryRequest(
             productId = productId,
             order = ProductBidField.CREATED_TIME,
             sort = SortBy.DESC,
-            type = type?.let { ProductBidType.ofQuery(it) }
-                ?: throw CustomException(RequestErrorCode.MISSING_REQUIRED_PARAMETER),
-            status = ProductBidStatus.BIDDING,
+            type = type?.let { ProductBidType.ofQuery(it) },
+            status = status?.let { ProductBidStatus.ofQuery(it) },
             page = page?.also { if (it < 1) throw CustomException(RequestErrorCode.OUT_OF_PAGE) } ?: 1,
             size = size?.also { if (it < 1) throw CustomException(RequestErrorCode.OUT_OF_SIZE) } ?: 10
         )

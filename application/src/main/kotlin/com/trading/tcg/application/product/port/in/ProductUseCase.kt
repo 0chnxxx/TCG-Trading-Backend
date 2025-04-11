@@ -13,4 +13,6 @@ interface ProductUseCase {
     fun findProductBidHistories(provider: Provider, query: FindProductBidHistoryQuery): Pageable<List<ProductBidHistoryDto>>
     fun findProductPriceTrend(query: FindProductBidTrendQuery): ProductPriceTrendDto
     fun updateProductBookmark(command: UpdateProductBookmarkCommand)
+    fun placeProductBuyBid(command: PlaceProductBuyBidCommand)
+    fun placeProductSellBid(command: PlaceProductSellBidCommand)
 }

@@ -8,13 +8,13 @@ import com.trading.tcg.application.user.port.out.UserPersistencePort
 import com.trading.tcg.global.dto.Pageable
 import com.trading.tcg.global.dto.Provider
 import com.trading.tcg.global.exception.CustomException
-import com.trading.tcg.product.domain.ProductBidType
-import com.trading.tcg.product.domain.ProductBookmark
+import com.trading.tcg.product.domain.*
 import com.trading.tcg.product.exception.ProductErrorCode
 import com.trading.tcg.user.exception.UserErrorCode
 import lombok.RequiredArgsConstructor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Service
@@ -118,5 +118,45 @@ class ProductService(
 
             productPersistencePort.saveProductBookmark(newProductBookmark)
         }
+    }
+
+    @Transactional
+    override fun placeProductBuyBid(command: PlaceProductBuyBidCommand) {
+        val product = productPersistencePort.findById(command.productId)
+            .orElseThrow { CustomException(ProductErrorCode.NOT_FOUND_PRODUCT) }
+        val user = userPersistencePort.findById(command.userId)
+            .orElseThrow { CustomException(UserErrorCode.NOT_FOUND_USER) }
+
+        val productBuyBid = ProductBuyBid(
+            product = product,
+            user = user,
+            status = ProductBidStatus.BIDDING,
+            price = BigDecimal.valueOf(command.price),
+            quantity = command.quantity,
+            stock = command.quantity,
+            closedTime = command.dueDate.atStartOfDay()
+        )
+
+        productPersistencePort.saveProductBuyBid(productBuyBid)
+    }
+
+    @Transactional
+    override fun placeProductSellBid(command: PlaceProductSellBidCommand) {
+        val product = productPersistencePort.findById(command.productId)
+            .orElseThrow { CustomException(ProductErrorCode.NOT_FOUND_PRODUCT) }
+        val user = userPersistencePort.findById(command.userId)
+            .orElseThrow { CustomException(UserErrorCode.NOT_FOUND_USER) }
+
+        val productSellBid = ProductSellBid(
+            product = product,
+            user = user,
+            status = ProductBidStatus.BIDDING,
+            price = BigDecimal.valueOf(command.price),
+            quantity = command.quantity,
+            stock = command.quantity,
+            closedTime = command.dueDate.atStartOfDay()
+        )
+
+        productPersistencePort.saveProductSellBid(productSellBid)
     }
 }

@@ -10,8 +10,8 @@ data class FindProductBidHistoryQuery(
     val productId: Long,
     val order: ProductBidField,
     val sort: SortBy,
-    val type: ProductBidType? = null,
-    val status: ProductBidStatus? = null,
+    val type: ProductBidType?,
+    val status: ProductBidStatus?,
     val page: Int,
     val size: Int
 )

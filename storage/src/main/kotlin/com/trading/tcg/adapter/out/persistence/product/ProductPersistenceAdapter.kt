@@ -36,7 +36,9 @@ class ProductPersistenceAdapter(
     private val objectMapper: ObjectMapper,
     private val jpaQueryFactory: JPAQueryFactory,
     private val productJpaRepository: ProductJpaRepository,
-    private val productDealJpaRepository: ProductDealJpaRepository,
+    private val productDealBidJpaRepository: ProductDealBidJpaRepository,
+    private val productBuyBidJpaRepository: ProductBuyBidJpaRepository,
+    private val productSellBidJpaRepository: ProductSellBidJpaRepository,
     private val productBookmarkJpaRepository: ProductBookmarkJpaRepository
 ): ProductPersistencePort {
     @Value("\${application.data.product-catalog}")
@@ -369,7 +371,7 @@ class ProductPersistenceAdapter(
             ProductBidStatus.DEALT -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.DEALT))
             ProductBidStatus.CANCELLED -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.CANCELLED))
             ProductBidStatus.CLOSED -> whereBuilder.and(qProductBuyBid.status.eq(ProductBidStatus.CLOSED))
-            else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_STATUS)
+            null -> {}
         }
 
         val totalCount = jpaQueryFactory
@@ -401,6 +403,10 @@ class ProductPersistenceAdapter(
         )
     }
 
+    override fun saveProductBuyBid(productBuyBid: ProductBuyBid) {
+        productBuyBidJpaRepository.save(productBuyBid)
+    }
+
     override fun findProductSellBids(query: FindProductBidHistoryQuery): Pageable<List<ProductSellBid>> {
         val qUser = QUser.user
         val qProduct = QProduct.product
@@ -424,7 +430,7 @@ class ProductPersistenceAdapter(
             ProductBidStatus.DEALT -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.DEALT))
             ProductBidStatus.CANCELLED -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.CANCELLED))
             ProductBidStatus.CLOSED -> whereBuilder.and(qProductSellBid.status.eq(ProductBidStatus.CLOSED))
-            else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_STATUS)
+            null -> {}
         }
 
         val totalCount = jpaQueryFactory
@@ -454,6 +460,10 @@ class ProductPersistenceAdapter(
             ),
             data = productBids
         )
+    }
+
+    override fun saveProductSellBid(productSellBid: ProductSellBid) {
+        productSellBidJpaRepository.save(productSellBid)
     }
 
     override fun findProductDealBids(query: FindProductBidHistoryQuery): Pageable<List<ProductDealBid>> {
@@ -491,7 +501,7 @@ class ProductPersistenceAdapter(
             ProductBidStatus.CLOSED -> whereBuilder.and(
                 qProductBuyBid.status.eq(ProductBidStatus.CLOSED).or(qProductSellBid.status.eq(ProductBidStatus.CLOSED))
             )
-            else -> throw CustomException(ProductErrorCode.INVALID_PRODUCT_BID_STATUS)
+            null -> {}
         }
 
         val totalCount = jpaQueryFactory
@@ -531,7 +541,7 @@ class ProductPersistenceAdapter(
         productId: Long,
         dateTime: LocalDateTime
     ): List<ProductDealBid> {
-        return productDealJpaRepository.findAllByProductIdAndCreatedTimeAfter(productId, dateTime)
+        return productDealBidJpaRepository.findAllByProductIdAndCreatedTimeAfter(productId, dateTime)
     }
 
     override fun findProductBookmark(id: ProductBookmark.ProductBookmarkId): Optional<ProductBookmark> {

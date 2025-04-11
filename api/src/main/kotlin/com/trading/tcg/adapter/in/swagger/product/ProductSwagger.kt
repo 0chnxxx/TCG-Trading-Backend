@@ -51,25 +51,17 @@ interface ProductSwagger {
         request: UpdateProductBookmarkRequest
     ): ResponseEntity<Unit>
 
-//    @Operation(summary = "상품 즉시 구매", description = "상품을 즉시 구매한다.")
-//    fun buyProduct(
-//        provider: Provider,
-//        productId: Long,
-//        request: BuyProductRequest
-//    ): ResponseEntity<Unit>
-//
-//    @Operation(summary = "상품 구매 입찰", description = "상품에 대한 구매 입찰을 등록한다.")
-//    fun submitProductBuyBid(
-//        provider: Provider,
-//        productId: Long,
-//        request: SubmitProductBuyBidRequest
-//    ): ResponseEntity<Unit>
-//
-//    @Operation(summary = "상품 구매 입찰 제안", description = "상품 판매자에게 구매 입찰을 제안한다.")
-//    fun offerProductBuyBid(
-//        provider: Provider,
-//        productId: Long,
-//        bidId: Long,
-//        request: OfferProductBuyBidRequest
-//    ): ResponseEntity<Unit>
+    @Operation(summary = "상품 구매 입찰", description = "상품에 대한 구매 입찰을 등록한다.")
+    fun placeProductBuyBid(
+        provider: Provider,
+        productId: Long,
+        request: PlaceProductBuyBidRequest
+    ): ResponseEntity<Unit>
+
+    @Operation(summary = "상품 판매 입찰", description = "상품에 대한 판매 입찰을 등록한다.")
+    fun placeProductSellBid(
+        provider: Provider,
+        productId: Long,
+        request: PlaceProductSellBidRequest
+    ): ResponseEntity<Unit>
 }
